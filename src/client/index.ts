@@ -13,8 +13,10 @@ export { ClientAuth as auth };
  
 // TODO: this causes a waterfall when auth not init, find a way to check if auth is init. maybe a /health endpoint?
 /** Helper to get the current authenticated user */
-export const getAuth = ClientSession.getAuth.bind(ClientSession);
 
 export function hello() {
   console.log("Hello from AuthKit Client!");
 }
+
+/** Main hook exports */
+export * from "./hooks/useAuth";
