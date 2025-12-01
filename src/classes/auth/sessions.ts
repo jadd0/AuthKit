@@ -4,6 +4,7 @@ import { Session as DatabaseSession } from "@/db/schemas";
 import { DatabaseUserInteractions } from "@/db/interfaces/databaseUserInteractions";
 import { generateSessionToken } from "@/utils/session/generateSessionToken";
 import { authConfig } from "@/core/singleton";
+import { SessionWithUser } from "@/shared/types";
 
 // TODO: not fetching from db on init
 
