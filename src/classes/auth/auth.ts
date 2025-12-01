@@ -47,12 +47,13 @@ export class Auth {
     let sessions;
     try {
       sessions = await DatabaseSessionInteractions.getAllSessions();
+      console.log("Retrieved sessions from database:", sessions);
     } catch (error) {
       throw new Error(
         "An error occurred whilst attempting to retrieve all active database authentication Sessions."
       );
     }
-
+    
     await this.sessions.appendDatabaseSessions(sessions);
   }
 

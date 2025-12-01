@@ -107,6 +107,30 @@ export class Sessions {
   async appendDatabaseSessions(databaseSessions: DatabaseSession[]) {
     // Programmatically append each User to a Session object
     for (const session of databaseSessions) {
+      // Remove expired sessions
+      const now = Date.now();
+      const absoluteTTL = authConfig.options.absoluteTTL;
+
+      if (absoluteTTL) {
+        const sessionAge = now - session.createdAt.getTime();
+        if (sessionAge > absoluteTTL) {
+          // Delete expired session from DB
+          try {
+            await DatabaseSessionInteractions.deleteSessionBySessionId(
+              session.id
+            );
+          } catch (error) {
+            console.error(
+              "Error deleting expired session with ID " +
+                session.id +
+                " from database:",
+              error
+            );
+          }
+          continue; // Skip to next session
+        }
+      }
+
       // Retrieve the user associated with the session userId
       const user = await DatabaseUserInteractions.getUserById(session.userId);
 
@@ -131,6 +155,11 @@ export class Sessions {
       this.sessionsById.set(session.id, sessionObj);
       this.sessionsByToken.set(session.sessionToken, sessionObj);
     }
+
+    console.log(
+      "Successfully appended database sessions to server session maps." +
+        this.sessionsById
+    );
   }
 
   // END: UPDATE
