@@ -34,6 +34,7 @@ CREATE TABLE "users" (
 	"image" varchar,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
 	"updatedAt" timestamp DEFAULT now() NOT NULL,
+	"roles" text[] DEFAULT ARRAY['user']::text[] NOT NULL,
 	CONSTRAINT "users_username_unique" UNIQUE("username"),
 	CONSTRAINT "users_email_unique" UNIQUE("email")
 );

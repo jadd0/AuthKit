@@ -19,4 +19,4 @@ export function hello() {
 }
 
 /** Main hook exports */
-export * from "./hooks/useAuth";
+export * from "./hooks/";

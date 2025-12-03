@@ -1,5 +1,5 @@
 {
-  "id": "68eec88c-86df-473e-bc60-04835bad410a",
+  "id": "cb06ee7f-ee19-40e9-9f18-7fccbbaf4884",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -245,6 +245,13 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "roles": {
+          "name": "roles",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "ARRAY['user']::text[]"
         }
       },
       "indexes": {},
