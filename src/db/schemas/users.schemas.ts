@@ -1,4 +1,5 @@
-import { pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+import { pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   /** The primary key for the user table; A unique reference to each user */
@@ -25,7 +26,13 @@ export const users = pgTable("users", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 
   /** A timestamp explaining when the user was last updated */
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(), // TODO: add trigger to update on row update
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(), // TODO: add trigger to update on row update,
+
+  /** An array of roles for the user, eg: [user, admin]  */
+  roles: text("roles")
+    .array()
+    .notNull()
+    .default(sql`ARRAY['user']::text[]`),
 });
 
 export type User = typeof users.$inferSelect;

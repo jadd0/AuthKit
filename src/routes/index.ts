@@ -26,6 +26,9 @@ export async function routeMainAuthRequest(
         { status: 200 }
       );
 
+    case "option":
+      
+
     default:
       return NextResponse.json({ message: "Route not found" }, { status: 404 });
   }

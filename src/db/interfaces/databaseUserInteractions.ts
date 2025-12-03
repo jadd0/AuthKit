@@ -25,20 +25,14 @@ export const DatabaseUserInteractions = {
 
   /** Used to retrieve a user via their email */
   async getUserByEmail(email: string): Promise<User | null> {
-    const result = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email));
+    const result = await db.select().from(users).where(eq(users.email, email));
 
     return result[0] || null;
   },
 
   /** Used to retrieve a user via their username */
   getUserByUsername(username: string): Promise<User | null> {
-    const result = db
-      .select()
-      .from(users)
-      .where(eq(users.username, username));
+    const result = db.select().from(users).where(eq(users.username, username));
 
     return result[0] || null;
   },
@@ -110,6 +104,17 @@ export const DatabaseUserInteractions = {
     const result = await db
       .update(users)
       .set({ image })
+      .where(eq(users.id, id))
+      .returning();
+
+    return result[0] || null;
+  },
+
+  /** Used to update a user's roles via their id */
+  async updateUserRole(roles: string[], id: string): Promise<User | null> {
+    const result = await db
+      .update(users)
+      .set({ roles })
       .where(eq(users.id, id))
       .returning();
 
