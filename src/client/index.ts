@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * @module AuthKit/Client
  * @description Client-side authentication module for AuthKit.
@@ -10,7 +12,7 @@ import { ClientAuth } from "./auth/clientAuth";
 /** Main class exports */
 export { ClientSession as session };
 export { ClientAuth as auth };
- 
+
 // TODO: this causes a waterfall when auth not init, find a way to check if auth is init. maybe a /health endpoint?
 /** Helper to get the current authenticated user */
 

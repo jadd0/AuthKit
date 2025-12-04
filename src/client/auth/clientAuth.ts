@@ -1,4 +1,3 @@
-import { authConfig } from "@/core/singleton";
 import { ClientEmailPassword } from "./providers/clientEmailPassword";
 
 /** Wrapper object for client-side auth methods */

@@ -1,6 +1,6 @@
-import { serverSession } from "@/core/singleton";
-import { Session, User } from "@/db/schemas";
-import { Session as SessionClass } from "@/classes/auth/session";
+import { serverSession } from "@/server/core/singleton";
+import { Session, User } from "@/shared/schemas";
+import { Session as SessionClass } from "@/server/classes/auth/session";
 
 type ClassProps<C> = {
   [K in keyof C as C[K] extends Function ? never : K]: C[K];

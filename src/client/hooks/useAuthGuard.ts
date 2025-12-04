@@ -1,4 +1,6 @@
-import { User } from "@/db/schemas";
+"use client";
+
+import { User } from "@/shared/schemas";
 import { useAuth } from "./useAuth";
 import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
