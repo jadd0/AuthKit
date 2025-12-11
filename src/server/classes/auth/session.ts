@@ -84,7 +84,7 @@ export class Session {
     if (!idleTTL) return null;
 
     // Returning the idle expiry date as the created at time in ms + idleTTL, from config, in ms - producing the expiry
-    return new Date(this.getCreatedAt().getTime() + idleTTL * 1000);
+    return new Date(this.getLastActivityTime().getTime() + idleTTL);
   }
 
   /** Used to retrieve the absolute expiry date for the session */
@@ -95,7 +95,7 @@ export class Session {
     if (!absoluteTTL) return null;
 
     // Returning the idle expiry date as the created at time in ms + absoluteTTL, from config, in ms - producing the expiry
-    return new Date(this.getCreatedAt().getTime() + absoluteTTL * 1000);
+    return new Date(this.getCreatedAt().getTime() + absoluteTTL);
   }
 
   /** Used to retrieve the session token */

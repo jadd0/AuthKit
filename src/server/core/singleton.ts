@@ -77,8 +77,8 @@ async function init(config: AuthConfig): Promise<Auth> {
   authConfig = config;
 
   // Default TTL lengths if not specified by developer
-  const idleTTLLength = 1800; // 30 minutes
-  const absoluteTTLLength = 32400; // 9 hours
+  const idleTTLLength = 1800 * 1000; // 30 minutes
+  const absoluteTTLLength = 32400 * 1000; // 9 hours
 
   // Create the Auth instance
   auth = new Auth(
