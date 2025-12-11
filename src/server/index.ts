@@ -9,3 +9,6 @@ export type { DatabaseConfig } from "../shared/types/config.types.js";
 
 /** Main entry point to library */
 export { default as AuthKit } from "./core/factory.js";
+
+/** Useful functions and such for use server-side */
+export * from "./public";
