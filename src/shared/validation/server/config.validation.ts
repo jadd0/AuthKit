@@ -34,6 +34,15 @@ const OptionsSchema = z.object({
   loginRoute: z.string().nullable().optional(), // Optional value for an automatic redirect to login page
 });
 
+const OIDCProvidersSchema = z.object({
+  id: z.string(),
+  issuer: z.string(),
+  clientId: z.string(),
+  clientSecret: z.string(),
+  redirectURI: z.string(),
+  scopes: z.enum([]),
+});
+
 /** Full config schema */
 export const AuthConfigSchema = z.object({
   options: OptionsSchema,
@@ -44,6 +53,6 @@ export const AuthConfigSchema = z.object({
   /** Either a database pool, or a database URL */
   db: z.union([z.string().url(), DatabasePoolConfigSchema]),
 
-  providers: z.array(z.any()).default([]), // TODO: refine this with proper type
+  providers: z.array(OIDCProvidersSchema).default([]),
   callbacks: CallbacksSchema,
 });
