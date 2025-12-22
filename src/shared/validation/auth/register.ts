@@ -1,4 +1,4 @@
-import { accounts, users } from "@/db/schemas";
+import { accounts, users } from "@/shared/schemas";
 import { createInsertSchema } from "drizzle-zod";
 
 /** Zod schema for User registration */

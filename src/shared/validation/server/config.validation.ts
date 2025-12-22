@@ -26,17 +26,24 @@ const OptionsSchema = z.object({
   strategy: z.enum(["jwt", "database"]).default("database"),
   idleTTL: z.number().nullable().optional(),
   absoluteTTL: z.number().nullable().optional(),
+  sameSite: z
+    .enum(["lax", "strict", "none"])
+    .default("strict")
+    .nullable()
+    .optional(),
+  loginRoute: z.string().nullable().optional(), // Optional value for an automatic redirect to login page
 });
 
 /** Full config schema */
 export const AuthConfigSchema = z.object({
-  options: OptionsSchema.default({ strategy: "database" }),
+  options: OptionsSchema,
+
+  /** Default roles assigned to new users */
+  userRoles: z.array(z.string()).default(["user", "admin"]).optional(),
 
   /** Either a database pool, or a database URL */
   db: z.union([z.string().url(), DatabasePoolConfigSchema]),
 
   providers: z.array(z.any()).default([]), // TODO: refine this with proper type
   callbacks: CallbacksSchema,
-
-  sameSite: z.enum(["lax", "strict", "none"]).default("strict").nullable(),
 });

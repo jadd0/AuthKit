@@ -18,9 +18,9 @@
       "@/types": ["src/shared/types/index.js"],
       "@/constants": ["src/shared/constants/index.js"],
       "@/validation": ["src/shared/validation/index.js"]
-    },
+    }
   },
-  "include": ["src", "src/core"],
+  "include": ["src", "src/server/core"],
   "tsc-alias": {
     "resolveFullPaths": true,
     "verbose": true

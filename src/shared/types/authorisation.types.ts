@@ -1,4 +1,4 @@
-import { Session } from "@/classes/auth/session";
+import { Session } from "@/server/classes/auth/session";
 
 // TODO: type properly
 /** Authorisation type to validate user and return defined data about them */

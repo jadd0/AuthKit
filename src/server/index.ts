@@ -1,6 +1,13 @@
-// Exports for all server modules
+import { AuthConfig } from "../shared/types/config.types.js";
 
+/** Used in a user's "auth.ts" or corresponding file to assist them with authentication setup */
+export type { AuthConfig };
 
-export * from "./runtime/index.js";
-export * from "./public/index.js";
+/** Necessary database type for migrations and auth setup */
+export type { DatabaseConfig } from "../shared/types/config.types.js";
 
+/** Main entry point to library */
+export { default as AuthKit } from "./core/factory.js";
+
+/** Useful functions and such for use server-side */
+export * from "./public/functions/";
