@@ -32,8 +32,10 @@ const OptionsSchema = z.object({
     .nullable()
     .optional(),
   loginRoute: z.string().nullable().optional(), // Optional value for an automatic redirect to login page
+  redirectURLs: z.enum([]).nullable() // Optional array for OIDC provider redirect URLs
 });
 
+/** Schema for OIDC providers */
 const OIDCProvidersSchema = z.object({
   id: z.string(),
   issuer: z.string(),
