@@ -48,7 +48,6 @@ export function useAuthGuard(
   const hasAccess = isAuthenticated && (requiredRoles.length ? hasRoles : true);
 
   useEffect(() => {
-    console.log({hasAccess, loading, redirectTo, onUnauthorised, router})
     if (loading) return;
 
     if (!hasAccess) {
