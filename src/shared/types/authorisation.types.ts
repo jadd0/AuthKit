@@ -8,3 +8,9 @@ export type Authorise = (
   // User supplied credentials (eg: form data)
   credentials: unknown
 ) => Promise<Session>;
+
+export type Discovery = {
+  authorization_endpoint: string;
+  token_endpoint: string;
+  jwks_uri: string;
+};
