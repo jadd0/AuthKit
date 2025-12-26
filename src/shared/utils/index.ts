@@ -6,5 +6,5 @@
 
 // Exports for utils
 
-export * from "./decoder.js";
+export * from "./b64EncodeDecode.js";
 export * from "./key.js";
