@@ -39,6 +39,7 @@ const OptionsSchema = z.object({
 /** Schema for OIDC providers */
 const OIDCProvidersSchema = z.object({
   id: z.string(),
+  type: z.string(),
   issuer: z.string(),
   clientId: z.string(),
   clientSecret: z.string(),
