@@ -13,7 +13,7 @@ export async function routeMainAuthRequest(
   // Provider handler
   switch (segments[0]) {
     case "provider":
-      return await routeProviderRequest(segments, method, body);
+      return await routeProviderRequest(segments, method, body, parsedCookies);
 
     case "session":
       return await routeSessionRequest(segments, method, body, parsedCookies);
