@@ -24,7 +24,7 @@ export const DatabaseAccountInteractions = {
   /** Used to retrieve a unique account connection via composite key (userId + provider) */
   async getAccountByCompositeKey(
     userId: string,
-    provider: Providers
+    provider: string
   ): Promise<Account | null> {
     const result = await db
       .select()
@@ -49,6 +49,27 @@ export const DatabaseAccountInteractions = {
   // END: READ
 
   // START: UPDATE
+
+  /** Used to update a user's account tokens (if via email/password provider) via the composite key (userId + provider) */
+  async updateAccountTokens(
+    accessToken: string,
+    refreshToken: string,
+    expiresAt: number,
+    userId: string,
+    provider: string
+  ): Promise<Account | null> {
+    const result = await db
+      .update(accounts)
+      .set({
+        accessToken,
+        refreshToken,
+        expiresAt,
+      })
+      .where(and(eq(accounts.userId, userId), eq(accounts.provider, provider)))
+      .returning();
+
+    return result[0] || null;
+  },
 
   /** Used to update a user's password (if via email/password provider) via the composite key (userId + provider) */
   async updateAccountPassword(

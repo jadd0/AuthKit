@@ -4,10 +4,9 @@ import { GeneralOIDC } from "@/server/classes/providers/generalOIDC";
 export async function routeOIDCAuthorise(
   provider: GeneralOIDC,
   cookies: Record<string, string>,
-  body: any
+  { body, url }: { body: any; url: string }
 ): Promise<Response> {
-  const redirectTo =
-    new URL(provider.redirectURI).searchParams.get("redirectTo") ?? undefined;
+  const redirectTo = body?.redirectTo ?? undefined;
 
   const { authorizationUrl, stateCookieValue, codeVerifier } =
     await provider.createAuthorisationUrl(redirectTo);

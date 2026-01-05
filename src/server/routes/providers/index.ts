@@ -7,18 +7,25 @@ import { routeOIDCProviderRequest } from "./OIDCProvider";
 export async function routeProviderRequest(
   segments: string[],
   method: string,
-  body: any,
+  { body, url }: { body: any; url: string },
   cookies: Record<string, string>
 ): Promise<Response> {
   const providerId = segments[1];
 
+  console.log("serverAuth.providers:", serverAuth.providers);
+
   // Provider: emailPassword
   if (providerId === "emailPassword") {
-    return await routeEmailPasswordProviderRequest(segments, method, body);
+    return await routeEmailPasswordProviderRequest(segments, method, {
+      body,
+      url,
+    });
   }
 
   // Provider: OIDC
   const oidcProvider = serverAuth.providers.oidc?.[providerId];
+
+  console.log("oidcProvider:", oidcProvider);
 
   // If no such OIDC provider
   if (!oidcProvider) {
@@ -28,7 +35,7 @@ export async function routeProviderRequest(
   return await routeOIDCProviderRequest(
     segments,
     method,
-    body,
+    { body, url },
     cookies,
     oidcProvider
   );

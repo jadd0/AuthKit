@@ -1,6 +1,7 @@
 import { authConfig } from "@/server/core/singleton";
 import { StatePayload } from "@/shared/types";
 import { createHmac, timingSafeEqual } from "crypto";
+import { base64urlDecode } from "../b64EncodeDecode";
 
 /** Helper used to verify a state payload for OIDC providers */
 export function verifyStatePayload(token: string): StatePayload {

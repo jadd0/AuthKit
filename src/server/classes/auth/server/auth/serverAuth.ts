@@ -43,5 +43,7 @@ export class ServerAuth {
         );
       }
     }
+
+    console.log("Initialized providers:", Object.keys(this.providers));
   }
 }

@@ -1,6 +1,7 @@
 import { authConfig } from "@/server/core/singleton";
 import { StatePayload } from "@/shared/types";
 import { createHmac } from "crypto";
+import { base64urlEncode } from "../b64EncodeDecode";
 
 /** Helper used to encode an OIDC provider state payload */
 export function signStatePayload(payload: StatePayload): string {

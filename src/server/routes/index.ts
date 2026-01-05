@@ -7,16 +7,16 @@ import { auth } from "../core/singleton";
 export async function routeMainAuthRequest(
   segments: string[],
   method: string,
-  body: any,
+  { body, url }: { body: any; url: string },
   parsedCookies: Record<string, string>
 ): Promise<Response> {
   // Provider handler
   switch (segments[0]) {
     case "provider":
-      return await routeProviderRequest(segments, method, body, parsedCookies);
+      return await routeProviderRequest(segments, method, { body, url }, parsedCookies);
 
     case "session":
-      return await routeSessionRequest(segments, method, body, parsedCookies);
+      return await routeSessionRequest(segments, method, { body, url }, parsedCookies);
 
     case "health":
       const authInit = auth ? true : false

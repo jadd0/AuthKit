@@ -190,6 +190,7 @@ export class GeneralOIDC {
       redirect_uri: this.redirectURI,
       client_id: this.clientId,
       code_verifier: codeVerifier,
+      client_secret: this.clientSecret,
     });
 
     // Make the token exchange request
@@ -202,6 +203,13 @@ export class GeneralOIDC {
     });
 
     if (!res.ok) {
+      let details: any = null;
+      try {
+        details = await res.json();
+      } catch {
+        details = await res.text();
+      }
+      console.error("OIDC token error:", res.status, details);
       throw new Error("Failed to exchange code for tokens");
     }
 
