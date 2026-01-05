@@ -32,20 +32,56 @@ const OptionsSchema = z.object({
     .nullable()
     .optional(),
   loginRoute: z.string().nullable().optional(), // Optional value for an automatic redirect to login page
-  redirectURLs: z.enum([]).nullable(), // Optional array for OIDC provider redirect URLs
+  redirectURLs: z.enum([]).optional(), // Optional array for OIDC provider redirect URLs
   stateSecret: z.string().min(8), // Secret used to sign OIDC state payloads
 });
 
-/** Schema for OIDC providers */
-const OIDCProvidersSchema = z.object({
-  id: z.string(),
-  type: z.string(),
+/**
+ * Provider schemas
+ *
+ * Design: discriminate on 'id'
+ * in user code ("google", "emailPassword", etc.).
+ */
+
+// Credentials provider – minimal,
+const CredentialsProviderSchema = z.object({
+  type: z.literal("credentials"),
+  id: z.literal("emailPassword"),
+});
+
+// Google provider – minimal, you do NOT have to pass issuer/scopes
+const GoogleProviderSchema = z.object({
+  type: z.literal("oidc"),
+  id: z.literal("google"),
+  clientId: z.string(),
+  clientSecret: z.string(),
+  issuer: z.string().optional(),
+  redirectURI: z.string().optional(),
+  scopes: z.array(z.string()).optional(),
+});
+
+// Generic OIDC provider for any other id
+const GenericOIDCProviderSchema = z.object({
+  type: z.literal("oidc"),
+  id: z.string().min(1), // any non-empty id
   issuer: z.string(),
   clientId: z.string(),
   clientSecret: z.string(),
-  redirectURI: z.string(),
-  scopes: z.enum([]),
+  redirectURI: z.string().optional(),
+  scopes: z.array(z.string()).optional(),
 });
+
+/**
+ * Union of all providers
+ *
+ * With discriminatedUnion on `type`, "oidc" would have to be one unified schema.
+ * With discriminatedUnion on `id`, GenericOIDCProviderSchema would need a literal id.
+ */
+const ProviderSchema = z.union([
+  CredentialsProviderSchema,
+  GoogleProviderSchema,
+  GenericOIDCProviderSchema,
+]);
 
 /** Full config schema */
 export const AuthConfigSchema = z.object({
@@ -57,6 +93,6 @@ export const AuthConfigSchema = z.object({
   /** Either a database pool, or a database URL */
   db: z.union([z.string().url(), DatabasePoolConfigSchema]),
 
-  providers: z.array(OIDCProvidersSchema).default([]),
+  providers: z.array(ProviderSchema).default([]),
   callbacks: CallbacksSchema,
 });
