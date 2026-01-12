@@ -9,7 +9,8 @@ export const DatabaseUserInteractions = {
 
   /** Used to create a user */
   async createUser(config: NewUser): Promise<User> {
-    return await db.insert(users).values(config).returning();
+     const user = await db.insert(users).values(config).returning();
+     return user[0];
   },
 
   // END: CREATE

@@ -3,7 +3,7 @@ import { serverSession } from "@/server/core/singleton";
 export async function routeSessionRequest(
   segments: string[],
   method: string,
-  body: any,
+  { body, url }: { body: any; url: string },
   parsedCookies: Record<string, string>
 ): Promise<Response> {
   // Handle different session routes based on the path segments

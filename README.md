@@ -63,7 +63,7 @@ const config = {
 } satisfies AuthConfig;
 
 // The factory returns App Router–ready primitives
-export const { handlers, auth, signIn, signOut } = AuthKit(config);
+export const { handlers, auth, signOut } = AuthKit(config);
 ```
 
 We recommend adding the following to your tsconfig.json for ease of access:

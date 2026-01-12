@@ -27,7 +27,7 @@ export class Sessions {
     this.sessionsByToken = new Map<string, Session>();
   }
 
-  /** Create a new session and store it in both maps */
+  /** Create a new session (in database first) and store it in both maps */
   async createSession(user: any): Promise<Session> {
     // Generate a unique Session token
     const sessionToken = generateSessionToken();

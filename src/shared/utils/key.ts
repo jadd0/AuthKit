@@ -1,7 +1,7 @@
-import { base64Decode } from "./decoder";
+import { base64Decode } from "./b64EncodeDecode";
 
 /** Function to convert a shared secret and convert to a WebCrypto-ready key to verify HMAC-SHA256 tags produced for a JWT singing input
- * 
+ *
  * Using a HMAC (symmetric) key here since it's simpler for most applications than using RSA or ECDSA (asymmetric) keys
  * Additionally, HMAC is generally considered better than RSA for JWT signing due to performance and security considerations, especially when only one trusted backend service will utilise it
  */

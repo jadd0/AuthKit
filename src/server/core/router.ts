@@ -29,5 +29,10 @@ export async function routeAuthRequest(req: Request): Promise<Response> {
 
   // Handle different routes based on the path segments
 
-  return await routeMainAuthRequest(segments, method, body, parsedCookies);
+  return await routeMainAuthRequest(
+    segments,
+    method,
+    { body, url: req.url },
+    parsedCookies
+  );
 }
