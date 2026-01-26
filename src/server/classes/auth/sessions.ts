@@ -4,6 +4,7 @@ import { Session as DatabaseSession } from "@/shared/schemas";
 import { DatabaseUserInteractions } from "@/server/db/interfaces/databaseUserInteractions";
 import { generateSessionToken } from "@/shared/utils/session/generateSessionToken";
 import { authConfig } from "@/server/core/singleton";
+import { SessionWithUser } from "@/shared/types";
 
 // TODO: not fetching from db on init
 
@@ -169,16 +170,17 @@ export class Sessions {
     const session = this.sessionsById.get(sessionId);
     if (!session) return null;
 
-    // Remove old token from secondary map
-    this.sessionsByToken.delete(session.getSessionToken());
+    // Remove old session
+    this.deleteSession(sessionId);
 
     // Rotate on the session instance (updates DB)
-    await session.rotateSession();
+    const newSession = await session.rotateSession();
 
     // Re-index with new token
-    this.sessionsByToken.set(session.getSessionToken(), session);
+    this.sessionsByToken.set(newSession.getSessionToken(), newSession);
+    this.sessionsById.set(newSession.id, newSession);
 
-    return session;
+    return newSession;
   }
 
   // END: UPDATE
@@ -191,6 +193,15 @@ export class Sessions {
     if (session) {
       this.sessionsByToken.delete(session.getSessionToken());
       this.sessionsById.delete(sessionId);
+    }
+
+    // Delete from DB
+    if (!DatabaseSessionInteractions.deleteSessionBySessionId(sessionId)) {
+      throw new Error(
+        "An error occurred whilst attempting to delete the session with ID: " +
+          sessionId +
+          " from the database.",
+      );
     }
   }
 

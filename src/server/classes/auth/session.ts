@@ -2,6 +2,7 @@ import { User } from "@/shared/schemas";
 import { DatabaseSessionInteractions } from "@/server/db/interfaces/databaseSessionInteractions";
 import { authConfig } from "@/server/core/singleton";
 import { generateSessionToken } from "@/shared/utils/session/generateSessionToken";
+import { SessionWithUser } from "@/shared/types/session.types";
 
 /** Session class constructor interface */
 interface SessionConstructor {
