@@ -34,6 +34,7 @@ const OptionsSchema = z.object({
   loginRoute: z.string().nullable().optional(), // Optional value for an automatic redirect to login page
   redirectURLs: z.enum([]).optional(), // Optional array for OIDC provider redirect URLs
   stateSecret: z.string().min(8), // Secret used to sign OIDC state payloads
+  roles: z.array(z.string()), // Array of valid user roles
 });
 
 /**
