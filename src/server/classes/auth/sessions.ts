@@ -187,7 +187,7 @@ export class Sessions {
 
   // START: DELETE
 
-  /** Delete a session by its ID from both maps */
+  /** Delete a session by its ID from both maps and the database */
   deleteSession(sessionId: string): void {
     const session = this.sessionsById.get(sessionId);
     if (session) {

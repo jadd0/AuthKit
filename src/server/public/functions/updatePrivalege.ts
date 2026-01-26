@@ -2,7 +2,6 @@ import { DatabaseUserInteractions } from "@/server/db/interfaces/databaseUserInt
 import { auth as getAuth } from "./auth";
 import { auth } from "@/server/core/singleton";
 import { SessionWithUser } from "@/shared/types";
-import { Session } from "@/server/db/schemas/sessions.schemas";
 
 /**
  * Function to update user privilege
