@@ -44,10 +44,26 @@ export const DatabaseSessionInteractions = {
   // START: UPDATE
   // TODO: make these into a transaction?
 
+  /**
+   * Used to rotate a session token by session ID
+   */
+  async rotateSessionToken(
+    id: string,
+    newToken: string,
+  ): Promise<Session | null> {
+    const result = await db
+      .update(sessions)
+      .set({ sessionToken: newToken })
+      .where(eq(sessions.id, id))
+      .returning();
+
+    return result[0] ?? null;
+  },
+
   /** Used to update a session's token by user ID */
   async updateSessionTokenByUserId(
     token: string,
-    userId: string
+    userId: string,
   ): Promise<Session | null> {
     const result = await db
       .update(sessions)
@@ -61,7 +77,7 @@ export const DatabaseSessionInteractions = {
   /** Used to update a session's token by session ID */
   async updateSessionTokenById(
     token: string,
-    id: string
+    id: string,
   ): Promise<Session | null> {
     const result = await db
       .update(sessions)
@@ -75,7 +91,7 @@ export const DatabaseSessionInteractions = {
   /** Used to update and mark down when the user last interacted with the session via Session ID. Used to track idle TTL (sliding). Passes timestamp in so server in sync with DB */
   async updateLastActivityTimeById(
     id: string,
-    timestamp: Date
+    timestamp: Date,
   ): Promise<Session> {
     const result = await db
       .update(sessions)
@@ -89,7 +105,7 @@ export const DatabaseSessionInteractions = {
   /** Used to update and mark down when the user last interacted with the session via User ID. Used to track idle TTL (sliding). Passes timestamp in so server in sync with DB */
   async updateLastActivityTimeByUserId(
     userId: string,
-    timestamp: Date
+    timestamp: Date,
   ): Promise<Session> {
     const result = await db
       .update(sessions)

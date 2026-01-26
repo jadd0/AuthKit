@@ -4,6 +4,7 @@ import { Session as DatabaseSession } from "@/shared/schemas";
 import { DatabaseUserInteractions } from "@/server/db/interfaces/databaseUserInteractions";
 import { generateSessionToken } from "@/shared/utils/session/generateSessionToken";
 import { authConfig } from "@/server/core/singleton";
+import { SessionWithUser } from "@/shared/types";
 
 // TODO: not fetching from db on init
 
@@ -42,7 +43,7 @@ export class Sessions {
     if (!result) {
       throw new Error(
         "An error occurred whilst attempting to create a database authentication session for the user with ID: " +
-          user.id
+          user.id,
       );
     }
 
@@ -117,14 +118,14 @@ export class Sessions {
           // Delete expired session from DB
           try {
             await DatabaseSessionInteractions.deleteSessionBySessionId(
-              session.id
+              session.id,
             );
           } catch (error) {
             console.error(
               "Error deleting expired session with ID " +
                 session.id +
                 " from database:",
-              error
+              error,
             );
           }
           continue; // Skip to next session
@@ -140,7 +141,7 @@ export class Sessions {
             session.userId +
             " for the session with ID " +
             session.id +
-            " when attempting to append database Session to server Session map."
+            " when attempting to append database Session to server Session map.",
         );
       }
 
@@ -158,20 +159,49 @@ export class Sessions {
 
     console.log(
       "Successfully appended database sessions to server session maps." +
-        this.sessionsById
+        this.sessionsById,
     );
+  }
+
+  /**
+   * Rotate session token and update both maps
+   */
+  async rotateSession(sessionId: string): Promise<Session | null> {
+    const session = this.sessionsById.get(sessionId);
+    if (!session) return null;
+
+    // Remove old session
+    this.deleteSession(sessionId);
+
+    // Rotate on the session instance (updates DB)
+    const newSession = await session.rotateSession();
+
+    // Re-index with new token
+    this.sessionsByToken.set(newSession.getSessionToken(), newSession);
+    this.sessionsById.set(newSession.id, newSession);
+
+    return newSession;
   }
 
   // END: UPDATE
 
   // START: DELETE
 
-  /** Delete a session by its ID from both maps */
+  /** Delete a session by its ID from both maps and the database */
   deleteSession(sessionId: string): void {
     const session = this.sessionsById.get(sessionId);
     if (session) {
       this.sessionsByToken.delete(session.getSessionToken());
       this.sessionsById.delete(sessionId);
+    }
+
+    // Delete from DB
+    if (!DatabaseSessionInteractions.deleteSessionBySessionId(sessionId)) {
+      throw new Error(
+        "An error occurred whilst attempting to delete the session with ID: " +
+          sessionId +
+          " from the database.",
+      );
     }
   }
 
@@ -190,14 +220,14 @@ export class Sessions {
 
     // Delete from DB
     const deleteResult = DatabaseSessionInteractions.deleteSessionBySessionId(
-      session!.id
+      session!.id,
     );
 
     if (!deleteResult) {
       throw new Error(
         "An error occurred whilst attempting to delete the session with token: " +
           token +
-          " from the database."
+          " from the database.",
       );
     }
   }
@@ -219,7 +249,7 @@ export class Sessions {
       throw new Error(
         "An error occurred whilst attempting to delete the session with id: " +
           id +
-          " from the database."
+          " from the database.",
       );
     }
   }

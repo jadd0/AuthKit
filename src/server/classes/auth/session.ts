@@ -1,6 +1,8 @@
 import { User } from "@/shared/schemas";
 import { DatabaseSessionInteractions } from "@/server/db/interfaces/databaseSessionInteractions";
 import { authConfig } from "@/server/core/singleton";
+import { generateSessionToken } from "@/shared/utils/session/generateSessionToken";
+import { SessionWithUser } from "@/shared/types/session.types";
 
 /** Session class constructor interface */
 interface SessionConstructor {
@@ -107,12 +109,6 @@ export class Session {
 
   // START: UPDATE
 
-  /** Used to rotate session */
-  rotateSession(): Session {
-    // TODO: implement
-    return this;
-  }
-
   /** Used to update the last time the user interacted with the system */
   async updateLastActivityTime(): Promise<Session> {
     // Creates a timestamp of now
@@ -122,13 +118,13 @@ export class Session {
     const dbResult =
       await DatabaseSessionInteractions.updateLastActivityTimeById(
         this.id,
-        currentTimestamp
+        currentTimestamp,
       );
 
     // DB error occured
     if (!dbResult) {
       throw new Error(
-        `An error has occured whilst attempting to update the last time the User with ID ${this.user.id} interacted with the Session with ID ${this.id}`
+        `An error has occured whilst attempting to update the last time the User with ID ${this.user.id} interacted with the Session with ID ${this.id}`,
       );
     }
 
@@ -136,6 +132,31 @@ export class Session {
     this.lastActivityTime = currentTimestamp;
 
     // Return this object
+    return this;
+  }
+
+  /**
+   * Used to rotate session token (e.g., after privilege escalation)
+   */
+  async rotateSession(): Promise<Session> {
+    // Generate new token
+    const newToken = generateSessionToken();
+
+    // Update database
+    const dbResult = await DatabaseSessionInteractions.rotateSessionToken(
+      this.id,
+      newToken,
+    );
+
+    if (!dbResult) {
+      throw new Error(
+        `Failed to rotate session token for session ID ${this.id}`,
+      );
+    }
+
+    // Update this instance
+    this.sessionToken = newToken;
+
     return this;
   }
 
