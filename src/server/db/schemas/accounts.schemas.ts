@@ -55,9 +55,6 @@ export const accounts = pgTable(
     /** The encrypted user password */
     password: varchar("password"),
 
-    /** The hash type used for the password */
-    passwordHash: varchar("passwordHash"),
-
     /** A timestamp explaining when the account connection was created */
     createdAt: timestamp("createdAt").defaultNow().notNull(),
 

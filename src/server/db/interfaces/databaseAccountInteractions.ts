@@ -85,19 +85,6 @@ export const DatabaseAccountInteractions = {
     return result[0] || null;
   },
 
-  /** Used to update a user's password hash (if via email/password provider) via the composite key (userId + provider) */
-  async updateAccountPasswordHash(
-    passwordHash: string,
-    userId: string
-  ): Promise<Account | null> {
-    const result = await db
-      .update(accounts)
-      .set({ passwordHash })
-      .where(eq(accounts.userId, userId))
-      .returning();
-
-    return result[0] || null;
-  },
 
   // END: UPDATE
 
