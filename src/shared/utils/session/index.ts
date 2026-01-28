@@ -7,3 +7,4 @@ export * from "./generateSessionCookie";
 export * from "./generateSessionToken";
 export * from "./signStatePayload";
 export * from "./verifyStatePayload";
+export * from "./generateSessionCookieObject"

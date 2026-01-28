@@ -1,5 +1,10 @@
+"use server";
+
+import { generateSessionCookieObject } from "@/shared/utils/session";
 import { auth as getAuth } from "./auth";
-import { auth } from "@/server/core/singleton";
+import { auth, authConfig } from "@/server/core/singleton";
+import { DEFAULT_IDLE_TTL } from "@/shared/constants/config.constants";
+import { cookies } from "next/headers";
 
 /**
  * Rotates the current user session.
@@ -20,6 +25,18 @@ export async function rotateSession() {
   if (!rotatedSession) {
     throw new Error("Failed to rotate session.");
   }
+
+  // Generate session cookie object
+  const cookie = generateSessionCookieObject(
+    "session",
+    rotatedSession.getSessionToken(),
+    authConfig.options.idleTTL || DEFAULT_IDLE_TTL,
+    true,
+  );
+
+  // Set the cookie in the response
+  const cookieStore = await cookies();
+  cookieStore.set(cookie);
 
   // Return the rotated session
   return rotatedSession;
