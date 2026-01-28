@@ -1,6 +1,8 @@
 import { DatabaseAccountInteractions } from "@/server/db/interfaces/databaseAccountInteractions";
 import { DatabaseUserInteractions } from "@/server/db/interfaces/databaseUserInteractions";
 import { NewUser, User } from "@/shared/schemas";
+import { authConfig } from "@/server/core/singleton";
+import * as bcrypt from "bcrypt";
 
 /**
  * @class EmailPasswordProvider
@@ -17,17 +19,26 @@ export class EmailPasswordProvider {
       return null;
     }
 
-    // TODO: actual authentication logic with password hashing
-
     // Attempt to retrieve an Account with the retrieved User ID
     const userAccount =
       await DatabaseAccountInteractions.getAccountByCompositeKey(
         userWithEmail.id,
-        "emailPassword"
+        "emailPassword",
       );
 
-    // No Account exists for email-password provider with the given User ID, or the given password is incorrect for the Account
-    if (!userAccount || userAccount.password !== password) {
+    // No Account exists for email-password provider with the given User ID, or the given Account has no password
+    if (!userAccount || !userAccount.password) {
+      return null;
+    }
+
+    // Compare the provided password with the stored password hash
+    const isPasswordCorrect = await bcrypt.compare(
+      password,
+      userAccount.password,
+    );
+
+    // Incorrect password
+    if (!isPasswordCorrect) {
       return null;
     }
 
@@ -36,14 +47,17 @@ export class EmailPasswordProvider {
 
   // TODO: make this into a transaction ? not desperate
   /** Used to register a new user for email-password authentication */
-  async register(
-    config: NewUser,
-    password: string,
-    passwordHash?: string
-  ): Promise<User> {
+  async register(config: NewUser, password: string): Promise<User> {
     // Attempt to retrieve a user with the provided email before anything else
     const userResult = await DatabaseUserInteractions.getUserByEmail(
-      config.email
+      config.email,
+    );
+
+    // Hash the provided password
+    password = await bcrypt.hash(
+      password,
+      authConfig.providers.find((p) => p.type === "credentials")!
+        .saltingRounds!,
     );
 
     // No given user, therefore no account, or perhaps error.
@@ -54,7 +68,7 @@ export class EmailPasswordProvider {
       // DB error whilst trying to append User to Users table
       if (!newUserResult) {
         throw new Error(
-          `An error occurred whilst trying to append the User with email ${config.email} to the Users table. User register failed.`
+          `An error occurred whilst trying to append the User with email ${config.email} to the Users table. User register failed.`,
         );
       }
 
@@ -63,7 +77,6 @@ export class EmailPasswordProvider {
         userId: newUserResult.id,
         provider: "emailPassword",
         password,
-        passwordHash,
       });
 
       // DB error occurred whilst trying to append Account
@@ -72,7 +85,7 @@ export class EmailPasswordProvider {
         await DatabaseUserInteractions.deleteUser(newUserResult.id);
 
         throw new Error(
-          `An error occurred whilst trying to append the Account with email ${config.email} to the Account table. User register failed.`
+          `An error occurred whilst trying to append the Account with email ${config.email} to the Account table. User register failed.`,
         );
       }
 
@@ -86,13 +99,12 @@ export class EmailPasswordProvider {
       userId: userResult.id,
       provider: "emailPassword",
       password,
-      passwordHash,
     });
 
     // DB error occurred whilst trying to append the Account
     if (!newAccountResult) {
       throw new Error(
-        `An error occurred whilst trying to append the Account with email ${config.email} to the Account table. Email-password register failed.`
+        `An error occurred whilst trying to append the Account with email ${config.email} to the Account table. Email-password register failed.`,
       );
     }
 

@@ -42,8 +42,8 @@
     "dev": "tsup --watch --dts"
   },
   "dependencies": {
-    "@types/argon2": "^0.14.1",
-    "argon2": "^0.44.0",
+    "@types/bcrypt": "^6.0.0",
+    "bcrypt": "^6.0.0",
     "dotenv": "^16.0.3",
     "drizzle-orm": "^0.44.6",
     "drizzle-zod": "^0.8.3",
