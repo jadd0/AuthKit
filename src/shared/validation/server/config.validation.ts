@@ -48,6 +48,7 @@ const OptionsSchema = z.object({
 const CredentialsProviderSchema = z.object({
   type: z.literal("credentials"),
   id: z.literal("emailPassword"),
+  saltingRounds: z.number().min(4).default(10).optional(), // Optional value for hashing algorithm's salting rounds
 });
 
 // Google provider – minimal, you do NOT have to pass issuer/scopes
