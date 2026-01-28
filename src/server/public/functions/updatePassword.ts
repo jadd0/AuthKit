@@ -26,6 +26,11 @@ export async function updatePassword(newPassword: string) {
     hashedPassword,
   );
 
+  // Error occurred whilst updating password
+  if (!result) {
+    throw new Error("Failed to update password.");
+  }
+
   // Rotate the session to reflect the password change
   const rotateResult = await rotateSession();
 
@@ -33,7 +38,6 @@ export async function updatePassword(newPassword: string) {
   if (!rotateResult) {
     throw new Error("Failed to rotate session after password update.");
   }
-
 
   return rotateResult;
 }
