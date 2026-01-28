@@ -171,7 +171,7 @@ export class Sessions {
     if (!session) return null;
 
     // Remove old session
-    this.deleteSession(sessionId);
+    await this.deleteSession(sessionId);
 
     // Rotate on the session instance (updates DB)
     const newSession = await session.rotateSession();
@@ -188,7 +188,7 @@ export class Sessions {
   // START: DELETE
 
   /** Delete a session by its ID from both maps and the database */
-  deleteSession(sessionId: string): void {
+  async deleteSession(sessionId: string): Promise<void> {
     const session = this.sessionsById.get(sessionId);
     if (session) {
       this.sessionsByToken.delete(session.getSessionToken());
@@ -196,7 +196,7 @@ export class Sessions {
     }
 
     // Delete from DB
-    if (!DatabaseSessionInteractions.deleteSessionBySessionId(sessionId)) {
+    if (!await DatabaseSessionInteractions.deleteSessionBySessionId(sessionId)) {
       throw new Error(
         "An error occurred whilst attempting to delete the session with ID: " +
           sessionId +
