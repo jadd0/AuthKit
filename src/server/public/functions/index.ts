@@ -8,3 +8,4 @@
 export * from "./auth";
 export * from "./updatePrivalege"
 export * from "./rotateSession";
+export * from "./updatePassword";
