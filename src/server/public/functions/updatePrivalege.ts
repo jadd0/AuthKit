@@ -6,11 +6,14 @@ import { authConfig } from "@/server/core/singleton";
 import { rotateSession } from "./rotateSession";
 
 /**
- * Function to update user privilege
+ * Function to update user privilege.
+ * Returns the rotated session and a function to set the new session cookie. 
+ * 
+ * @param {string[]} roles - Array of roles to assign to the user.
  */
 export async function updatePrivilege(
   roles: string[],
-): Promise<SessionWithUser | null> {
+) {
   // Retrieves the current session
   const session = await getAuth();
 

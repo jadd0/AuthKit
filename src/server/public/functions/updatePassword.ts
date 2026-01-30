@@ -4,7 +4,7 @@ import * as bcrypt from "bcrypt";
 import { DatabaseAccountInteractions } from "@/server/db/interfaces/databaseAccountInteractions";
 import { rotateSession } from "./rotateSession";
 
-/** Updates a user's password */
+/** Updates a user's password. Returns the rotated session and a function to set the new session cookie. */
 export async function updatePassword(newPassword: string) {
   // Get the current session
   const session = await getAuth();

@@ -7,7 +7,7 @@ import { DEFAULT_IDLE_TTL } from "@/shared/constants/config.constants";
 import { cookies } from "next/headers";
 
 /**
- * Rotates the current user session.
+ * Rotates the current user session, and returns a function to set the new session cookie.
  */
 export async function rotateSession() {
   // Get the current session
@@ -27,17 +27,19 @@ export async function rotateSession() {
   }
 
   // Generate session cookie object
-  const cookie = generateSessionCookieObject(
+  const cookieConfig = generateSessionCookieObject(
     "session",
     rotatedSession.getSessionToken(),
     authConfig.options.idleTTL || DEFAULT_IDLE_TTL,
     true,
   );
 
-  // Set the cookie in the response
-  const cookieStore = await cookies();
-  cookieStore.set(cookie);
-
-  // Return the rotated session
-  return rotatedSession;
+  // Return the rotated session and a function to set the cookie
+  return {
+    session: rotatedSession,
+    setCookie: async () => {
+      const cookieStore = await cookies();
+      cookieStore.set(cookieConfig);
+    },
+  };
 }
