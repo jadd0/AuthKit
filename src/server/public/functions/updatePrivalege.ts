@@ -1,7 +1,5 @@
 import { DatabaseUserInteractions } from "@/server/db/interfaces/databaseUserInteractions";
 import { auth as getAuth } from "./auth";
-import { auth } from "@/server/core/singleton";
-import { SessionWithUser } from "@/shared/types";
 import { authConfig } from "@/server/core/singleton";
 import { rotateSession } from "./rotateSession";
 

@@ -1,5 +1,3 @@
-"use server";
-
 import { generateSessionCookieObject } from "@/shared/utils/session";
 import { auth as getAuth } from "./auth";
 import { auth, authConfig } from "@/server/core/singleton";
