@@ -53,11 +53,16 @@ export class EmailPasswordProvider {
       config.email,
     );
 
+    console.log("userResult", userResult);
+    console.log("config", authConfig);
+    console.log("provider credentials: ", authConfig.providers.find((p) => p.type === "credentials"))
+
+    const credentialsProviderConfig = authConfig.providers.find((p) => p.type === "credentials")!
+
     // Hash the provided password
     password = await bcrypt.hash(
       password,
-      authConfig.providers.find((p) => p.type === "credentials")!
-        .saltingRounds!,
+      10
     );
 
     // No given user, therefore no account, or perhaps error.
