@@ -6,5 +6,6 @@
 
 // Exports for utils
 
-export * from "./b64EncodeDecode.js";
-export * from "./key.js";
+export * from "./b64EncodeDecode";
+export * from "./key";
+export * from "./typeMethods";

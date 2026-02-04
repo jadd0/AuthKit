@@ -41,7 +41,7 @@ export async function routeSessionRequest(
 
       // Invalid session
       if (!result) {
-        console.error("Invalid session token for retrieval:", token);
+        console.error("Invalid session token for retrieval: ", token);
 
         return new Response(JSON.stringify({ message: "Invalid session" }), {
           status: 401,

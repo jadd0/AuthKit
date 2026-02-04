@@ -14,12 +14,14 @@ export function useEmailPasswordLogin(): UseEmailPasswordLogInResult {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  /** Callable login function */
   const login = useCallback(async (email: string, password: string) => {
     setLoading(true);
     setError(null);
     
     try {
-      await ClientEmailPassword.login(email, password);
+      const result = await ClientEmailPassword.login(email, password);
+      return result;
     } catch (err) {
       setError(err as Error);
     } finally {
