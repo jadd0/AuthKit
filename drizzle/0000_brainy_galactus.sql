@@ -10,7 +10,6 @@ CREATE TABLE "accounts" (
 	"scope" varchar,
 	"tokenType" varchar,
 	"password" varchar,
-	"passwordHash" varchar,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
 	"updatedAt" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "accounts_userId_provider_pk" PRIMARY KEY("userId","provider")
