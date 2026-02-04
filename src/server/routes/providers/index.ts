@@ -12,8 +12,6 @@ export async function routeProviderRequest(
 ): Promise<Response> {
   const providerId = segments[1];
 
-  console.log("serverAuth.providers:", serverAuth.providers);
-
   // Provider: emailPassword
   if (providerId === "emailPassword") {
     return await routeEmailPasswordProviderRequest(segments, method, {
@@ -24,8 +22,6 @@ export async function routeProviderRequest(
 
   // Provider: OIDC
   const oidcProvider = serverAuth.providers.oidc?.[providerId];
-
-  console.log("oidcProvider:", oidcProvider);
 
   // If no such OIDC provider
   if (!oidcProvider) {

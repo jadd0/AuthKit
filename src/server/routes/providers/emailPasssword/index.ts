@@ -48,6 +48,7 @@ export async function routeEmailPasswordProviderRequest(
 
         // Set session cookie for the user
         res.headers.set("Set-Cookie", result.cookie);
+
         return res;
       } else {
         // Method not allowed
@@ -66,7 +67,7 @@ export async function routeEmailPasswordProviderRequest(
       if (method === "POST") {
         // Call the server auth email-password register method
         let result;
-        console.log("body:", body);
+
         try {
           result = await serverAuth.providers.emailPassword.register(
             { email: body.email, name: body.name },

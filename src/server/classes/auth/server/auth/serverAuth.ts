@@ -30,7 +30,6 @@ export class ServerAuth {
       }
 
       // Generic/custom OIDC providers
-      // TODO: check ! on these
       else if (provider.type === "oidc" && provider.id !== "google") {
         this.providers.oidc = this.providers.oidc || {};
         this.providers.oidc[provider.id] = new GeneralOIDC(
