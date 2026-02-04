@@ -30,10 +30,10 @@ export class ServerEmailPassword {
   /** Use this to log a user in via Email and Password */
   async login(email: string, password: string) {
     // Basic validation
-    if (z.string().min(1).parse(email).length === 0) {
+    if (!email || z.string().min(1).parse(email).length === 0) {
       throw new Error("Email is required");
     }
-    if (z.string().min(1).parse(password).length === 0) {
+    if (!password || z.string().min(1).parse(password).length === 0) {
       throw new Error("Password is required");
     }
 
