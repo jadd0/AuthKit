@@ -48,6 +48,11 @@ export class ServerEmailPassword {
     // Create a session for the logged-in user
     const session = await auth.sessions.createSession(user);
 
+    // Failed to create session for user
+    if (!session) {
+      throw new Error("Failed to create session for user");
+    }
+
     // Generate session cookie
     const cookie = generateSessionCookie(
       "session",

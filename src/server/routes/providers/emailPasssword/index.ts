@@ -12,7 +12,6 @@ export async function routeEmailPasswordProviderRequest(
     throw new Error("Email/password provider not configured");
   }
 
-  // TODO: improve error handling and responses
   // Handle email-password provider routes
   switch (segments[2]) {
     // START: LOGIN
@@ -27,13 +26,24 @@ export async function routeEmailPasswordProviderRequest(
             body.email,
             body.password,
           );
-        } catch (err) {
+        } catch (err: any) {
+          if (err.message === "Invalid email or password") {
+            return NextResponse.json(
+              { message: "Invalid email or password" },
+              { status: 401 },
+            );
+          }
+
+          if (
+            err.message === "Email is required" ||
+            err.message === "Password is required"
+          ) {
+            return NextResponse.json({ message: err.message }, { status: 400 });
+          }
+
           console.error("Login error:", err);
 
-          return NextResponse.json(
-            { message: "Invalid email or password" },
-            { status: 401 },
-          );
+          return NextResponse.json({ message: err }, { status: 500 });
         }
 
         // Return response with session cookie set
