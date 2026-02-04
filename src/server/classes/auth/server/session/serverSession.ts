@@ -32,9 +32,30 @@ export class ServerSession {
     const cookie = generateSessionCookie(
       "session",
       session.getSessionToken(),
-      authConfig.options.idleTTL || DEFAULT_IDLE_TTL
+      authConfig.options.idleTTL || DEFAULT_IDLE_TTL,
     );
 
     return { session, cookie };
+  }
+
+  /** Use this to delete a session by its token, called from route handler after being invoked by clientSession */
+  async deleteSession(token: string) {
+    // Basic validation
+    if (z.string().min(1).parse(token).length === 0) {
+      throw new Error("Token is required");
+    }
+
+    // Attempt to retrieve the session by its token
+    const session = auth.sessions.getSessionByToken(token);
+
+    // Session not found
+    if (!session) {
+      return false;
+    }
+
+    // Delete the session
+    const result = await auth.sessions.deleteSession(session.id);
+
+    return result;
   }
 }

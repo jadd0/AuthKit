@@ -4,7 +4,7 @@ export async function routeSessionRequest(
   segments: string[],
   method: string,
   { body, url }: { body: any; url: string },
-  parsedCookies: Record<string, string>
+  parsedCookies: Record<string, string>,
 ): Promise<Response> {
   // Handle different session routes based on the path segments
   switch (
@@ -12,6 +12,21 @@ export async function routeSessionRequest(
   ) {
     case "DELETE":
       // Handle session deletion
+      const deleteToken = parsedCookies["session"] || body.token;
+
+      // Attempt to delete the session
+      const deleteResult = await serverSession.deleteSession(deleteToken);
+
+      // Invalid session
+      if (!deleteResult) {
+        console.error("Invalid session token for deletion:", deleteToken);
+
+        return new Response(JSON.stringify({ message: "Invalid session" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
       return new Response(JSON.stringify({ message: "Session deleted" }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -26,6 +41,8 @@ export async function routeSessionRequest(
 
       // Invalid session
       if (!result) {
+        console.error("Invalid session token for retrieval:", token);
+
         return new Response(JSON.stringify({ message: "Invalid session" }), {
           status: 401,
           headers: { "Content-Type": "application/json" },
@@ -47,7 +64,7 @@ export async function routeSessionRequest(
         {
           status: 404,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
   }
 }
