@@ -1,4 +1,8 @@
 import { NewUserClient } from "@/shared/schemas/users.schemas";
+import {
+  EmailPasswordProviderLoginPayload,
+  EmailPasswordProviderRegisterPayload,
+} from "@/shared/types/backend/emailPassword.provider.types";
 
 /** Object of methods for client-side email-password provider */
 export const ClientEmailPassword = {
@@ -31,7 +35,7 @@ export const ClientEmailPassword = {
     }
 
     // Login successful, retrieve data
-    const data = await res.json();
+    const data: Awaited<EmailPasswordProviderLoginPayload> = await res.json();
 
     // TODO: append to client-side session store and context
 
@@ -61,7 +65,8 @@ export const ClientEmailPassword = {
     }
 
     // Registration successful, retrieve data
-    const data = await res.json();
+    const data: Awaited<EmailPasswordProviderRegisterPayload> =
+      await res.json();
 
     // TODO: append to client-side session store and context
 
