@@ -1,4 +1,4 @@
-import { base64Decode } from "./b64EncodeDecode";
+import { base64urlDecode } from "./b64EncodeDecode";
 
 /** Function to convert a shared secret and convert to a WebCrypto-ready key to verify HMAC-SHA256 tags produced for a JWT singing input
  *
@@ -58,7 +58,7 @@ export async function verifyJWT(
   // Verify signature over the ASCII headerB64.payloadB64 (not decoded JSON)
   const key = await importHmacKey(secret);
   const data = new TextEncoder().encode(`${headerB64}.${payloadB64}`);
-  const signature = base64Decode(signatureB64);
+  const signature = base64urlDecode(signatureB64);
 
   const algo: HmacImportParams = { name: "HMAC", hash: "SHA-256" };
   const isValid = await crypto.subtle.verify(

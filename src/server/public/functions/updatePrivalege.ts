@@ -1,15 +1,17 @@
 import { DatabaseUserInteractions } from "@/server/db/interfaces/databaseUserInteractions";
 import { auth as getAuth } from "./auth";
-import { auth } from "@/server/core/singleton";
-import { SessionWithUser } from "@/shared/types";
 import { authConfig } from "@/server/core/singleton";
+import { rotateSession } from "./rotateSession";
 
 /**
- * Function to update user privilege
+ * Function to update user privilege.
+ * Returns the rotated session and a function to set the new session cookie. 
+ * 
+ * @param {string[]} roles - Array of roles to assign to the user.
  */
 export async function updatePrivilege(
   roles: string[],
-): Promise<SessionWithUser | null> {
+) {
   // Retrieves the current session
   const session = await getAuth();
 
@@ -39,11 +41,12 @@ export async function updatePrivilege(
   }
 
   // Rotate the session to get updated privileges
-  const updatedSession = await auth.sessions.rotateSession(session.id);
+  const rotateResult = await rotateSession();
 
-  if (!updatedSession) {
-    throw new Error("Failed to rotate session for updated privileges.");
+  // Error whilst rotating the session
+  if (!rotateResult) {
+    throw new Error("Failed to rotate session after privilege update.");
   }
 
-  return updatedSession;
+  return rotateResult;
 }

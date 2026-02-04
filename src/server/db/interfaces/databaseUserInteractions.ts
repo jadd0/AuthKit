@@ -86,20 +86,6 @@ export const DatabaseUserInteractions = {
     return result[0] || null;
   },
 
-  /** Used to update a user's password hash via their id */
-  async updateUserPasswordHash(
-    passwordHash: string,
-    id: string
-  ): Promise<User | null> {
-    const result = await db
-      .update(users)
-      .set({ passwordHash })
-      .where(eq(users.id, id))
-      .returning();
-
-    return result[0] || null;
-  },
-
   /** Used to update a user's image via their id */
   async updateUserImage(image: string, id: string): Promise<User | null> {
     const result = await db

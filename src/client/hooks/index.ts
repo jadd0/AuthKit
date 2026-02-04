@@ -6,3 +6,5 @@
 export * from "./useAuth";
 export * from "./useAuthGuard";
 export * from "./useProviderLogIn";
+export * from "./useEmailPasswordRegister";
+export * from "./useEmailPasswordLogIn";

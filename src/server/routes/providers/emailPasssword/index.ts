@@ -5,14 +5,13 @@ import { NextResponse } from "next/server";
 export async function routeEmailPasswordProviderRequest(
   segments: string[],
   method: string,
-  body: any
+  { body, url }: { body: any; url: string },
 ) {
   // Ensure the email-password provider is configured
   if (!serverAuth.providers.emailPassword) {
     throw new Error("Email/password provider not configured");
   }
 
-  // TODO: improve error handling and responses
   // Handle email-password provider routes
   switch (segments[2]) {
     // START: LOGIN
@@ -25,13 +24,26 @@ export async function routeEmailPasswordProviderRequest(
         try {
           result = await serverAuth.providers.emailPassword.login(
             body.email,
-            body.password
+            body.password,
           );
-        } catch (err) {
-          return NextResponse.json(
-            { message: "Invalid email or password" },
-            { status: 401 }
-          );
+        } catch (err: any) {
+          if (err.message === "Invalid email or password") {
+            return NextResponse.json(
+              { message: "Invalid email or password" },
+              { status: 401 },
+            );
+          }
+
+          if (
+            err.message === "Email is required" ||
+            err.message === "Password is required"
+          ) {
+            return NextResponse.json({ message: err.message }, { status: 400 });
+          }
+
+          console.error("Login error:", err);
+
+          return NextResponse.json({ message: err }, { status: 500 });
         }
 
         // Return response with session cookie set
@@ -41,17 +53,18 @@ export async function routeEmailPasswordProviderRequest(
             user: result.user,
             session: result.session,
           },
-          { status: 200 }
+          { status: 200 },
         );
 
         // Set session cookie for the user
         res.headers.set("Set-Cookie", result.cookie);
+
         return res;
       } else {
         // Method not allowed
         return NextResponse.json(
           { message: "Method not allowed" },
-          { status: 405 }
+          { status: 405 },
         );
       }
 
@@ -64,18 +77,21 @@ export async function routeEmailPasswordProviderRequest(
       if (method === "POST") {
         // Call the server auth email-password register method
         let result;
+
         try {
           result = await serverAuth.providers.emailPassword.register(
-            body.email,
-            body.password
+            { email: body.userConfig.email, name: body.userConfig.name },
+            body.password,
           );
         } catch (err) {
+          console.error("Registration error:", err);
+
           return NextResponse.json(
             {
               message:
                 "An issue occured whilst trying to register the user. Ensure all datafields are as expected.",
             },
-            { status: 401 }
+            { status: 401 },
           );
         }
 
@@ -86,7 +102,7 @@ export async function routeEmailPasswordProviderRequest(
             user: result.user,
             session: result.session,
           },
-          { status: 200 }
+          { status: 200 },
         );
 
         // Set session cookie for the user
@@ -96,7 +112,7 @@ export async function routeEmailPasswordProviderRequest(
         // Method not allowed
         return NextResponse.json(
           { message: "Method not allowed" },
-          { status: 405 }
+          { status: 405 },
         );
       }
 

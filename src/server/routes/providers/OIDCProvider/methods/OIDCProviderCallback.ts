@@ -8,7 +8,7 @@ import { generateSessionCookie } from "@/shared/utils/session/generateSessionCoo
 export async function routeOIDCCallback(
   provider: GeneralOIDC,
   cookies: Record<string, string>,
-  requestUrl: string
+  requestUrl: string,
 ): Promise<Response> {
   const url = new URL(requestUrl);
   const code = url.searchParams.get("code");
@@ -55,11 +55,11 @@ export async function routeOIDCCallback(
       roles: ["user"],
     });
 
+    // If user creation failed
     if (!newUser) {
+      console.error("Failed to create user for profile:", newUser);
       return new Response("Failed to create user", { status: 500 });
     }
-
-    console.log({ newUser });
 
     // Link OIDC account
     const linkedAccount = await DatabaseAccountInteractions.createAccount({
@@ -71,16 +71,19 @@ export async function routeOIDCCallback(
       expiresAt: tokens.expires_in, // TODO: check?
     });
 
+    // If OIDC account linking failed
     if (!linkedAccount) {
+      console.error("Failed to link OIDC account for user:", newUser);
       return new Response("Failed to link OIDC account", { status: 500 });
     }
 
     user = newUser;
   } else {
+    // Retrieve existing account by composite key (userId + provider)
     const existingAccount =
       await DatabaseAccountInteractions.getAccountByCompositeKey(
         user.id,
-        provider.id
+        provider.id,
       );
 
     if (existingAccount) {
@@ -91,15 +94,18 @@ export async function routeOIDCCallback(
           tokens.refresh_token!,
           tokens.expires_in,
           user.id,
-          provider.id
+          provider.id,
         );
 
+      // If account update failed
       if (!updatedAccount) {
+        console.error(
+          "Failed to update OIDC account for user:",
+          updatedAccount,
+        );
         return new Response("Failed to update OIDC account", { status: 500 });
       }
-    } 
-    
-    else {
+    } else {
       // Update existing account
       const account = await DatabaseAccountInteractions.createAccount({
         userId: user.id,
@@ -111,6 +117,10 @@ export async function routeOIDCCallback(
       });
 
       if (!account) {
+        console.error(
+          "Failed to create OIDC account for existing user:",
+          account,
+        );
         return new Response("Failed to create OIDC account", { status: 500 });
       }
     }
@@ -118,7 +128,9 @@ export async function routeOIDCCallback(
 
   const session = await auth.sessions.createSession(user);
 
+  // If session creation failed
   if (!session) {
+    console.error("Failed to create session for user:", user);
     return new Response("Failed to create session", { status: 500 });
   }
 
@@ -127,7 +139,7 @@ export async function routeOIDCCallback(
   const sessionCookie = generateSessionCookie(
     "session",
     session.getSessionToken(),
-    authConfig.options.idleTTL ?? DEFAULTIDLETTL
+    authConfig.options.idleTTL ?? DEFAULTIDLETTL,
   );
 
   const headers = new Headers();

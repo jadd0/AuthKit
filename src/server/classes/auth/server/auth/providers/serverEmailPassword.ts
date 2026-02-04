@@ -9,20 +9,31 @@ import { DEFAULT_IDLE_TTL } from "@/shared/constants";
 import { userRegisterSchema } from "@/shared/validation/auth";
 import { generateSessionCookie } from "@/shared/utils/session";
 import { z } from "zod";
+import z4 from "zod/v4";
 
 export class ServerEmailPassword {
   provider: typeof emailPasswordProvider;
   constructor() {
     this.provider = emailPasswordProvider;
+
+    // Ensure saltingRounds has a default value if not provided
+    if (
+      authConfig.providers.find((p) => p.type === "credentials")!
+        .saltingRounds == undefined
+    ) {
+      authConfig.providers.find(
+        (p) => p.type === "credentials",
+      )!.saltingRounds = 10;
+    }
   }
 
   /** Use this to log a user in via Email and Password */
   async login(email: string, password: string) {
     // Basic validation
-    if (z.string().min(1).parse(email).length === 0) {
+    if (!email || z.string().min(1).parse(email).length === 0) {
       throw new Error("Email is required");
     }
-    if (z.string().min(1).parse(password).length === 0) {
+    if (!password || z.string().min(1).parse(password).length === 0) {
       throw new Error("Password is required");
     }
 
@@ -37,11 +48,16 @@ export class ServerEmailPassword {
     // Create a session for the logged-in user
     const session = await auth.sessions.createSession(user);
 
+    // Failed to create session for user
+    if (!session) {
+      throw new Error("Failed to create session for user");
+    }
+
     // Generate session cookie
     const cookie = generateSessionCookie(
       "session",
       session.getSessionToken(),
-      authConfig.options.idleTTL || DEFAULT_IDLE_TTL
+      authConfig.options.idleTTL || DEFAULT_IDLE_TTL,
     );
 
     return { user, session, cookie };
@@ -54,16 +70,16 @@ export class ServerEmailPassword {
 
     // Check for validation errors
     if (!parsedConfig.success) {
-      const issues = parsedConfig.error.issues
-        .map((i) => `- ${i.message} (at ${i.path.join(".")})`)
-        .join("\n");
-      throw new Error(`Invalid registration data:\n${issues}`);
+      throw new Error(
+        `Invalid registration data:\n${z.prettifyError(parsedConfig.error)}`,
+      );
     }
 
-    // Basic password validation
-    if (z.string().min(6).parse(password).length < 6) {
-      throw new Error("Password must be at least 6 characters long");
-    }
+    // TODO: decide on and implement additional password validation rules (e.g. complexity requirements)
+    // // Basic password validation
+    // if (z.string().min(6).parse(password).length < 6) {
+    //   throw new Error("Password must be at least 6 characters long");
+    // }
 
     // Attempt to register the user via the provider
     const user = await this.provider.register(config, password);
@@ -79,7 +95,7 @@ export class ServerEmailPassword {
     const cookie = generateSessionCookie(
       "session",
       session.getSessionToken(),
-      authConfig.options.idleTTL || DEFAULT_IDLE_TTL
+      authConfig.options.idleTTL || DEFAULT_IDLE_TTL,
     );
 
     return { user, session, cookie };
