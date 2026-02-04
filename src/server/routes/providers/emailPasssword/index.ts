@@ -80,7 +80,7 @@ export async function routeEmailPasswordProviderRequest(
 
         try {
           result = await serverAuth.providers.emailPassword.register(
-            { email: body.email, name: body.name },
+            { email: body.userConfig.email, name: body.userConfig.name },
             body.password,
           );
         } catch (err) {
