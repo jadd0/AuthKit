@@ -1,5 +1,5 @@
 import { auth, authConfig } from "@/server/core/singleton";
-import { DEFAULT_IDLE_TTL } from "@/shared/constants";
+import { DEFAULT_IDLE_TTL, SESSION_COOKIE_NAME } from "@/shared/constants";
 import { generateSessionCookie } from "@/shared/utils/session";
 import z from "zod";
 
@@ -30,7 +30,7 @@ export class ServerSession {
 
     // Generate session cookie
     const cookie = generateSessionCookie(
-      "session",
+      SESSION_COOKIE_NAME,
       session.getSessionToken(),
       authConfig.options.idleTTL || DEFAULT_IDLE_TTL,
     );

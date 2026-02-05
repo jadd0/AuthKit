@@ -2,6 +2,7 @@ import { GeneralOIDC } from "@/server/classes/providers/generalOIDC";
 import { auth, authConfig } from "@/server/core/singleton";
 import { DatabaseAccountInteractions } from "@/server/db/interfaces/databaseAccountInteractions";
 import { DatabaseUserInteractions } from "@/server/db/interfaces/databaseUserInteractions";
+import { SESSION_COOKIE_NAME } from "@/shared/constants/auth.constants";
 import { generateSessionCookie } from "@/shared/utils/session/generateSessionCookie";
 
 /** Handle OIDC callback requests */
@@ -137,7 +138,7 @@ export async function routeOIDCCallback(
   const DEFAULTIDLETTL = 60 * 60 * 24 * 7; // 7 days in seconds
 
   const sessionCookie = generateSessionCookie(
-    "session",
+    SESSION_COOKIE_NAME,
     session.getSessionToken(),
     authConfig.options.idleTTL ?? DEFAULTIDLETTL,
   );

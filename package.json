@@ -22,6 +22,10 @@
       "types": "./dist/client/index.d.ts",
       "default": "./dist/client/index.js"
     },
+    "./middleware": {
+      "types": "./dist/middleware/index.d.ts",
+      "default": "./dist/middleware/index.js"
+    },
     "./drizzle/*": "./drizzle/*"
   },
   "peerDependencies": {
@@ -38,7 +42,7 @@
     "typescript": "^5"
   },
   "scripts": {
-    "build": "tsup src/client/index.ts src/server/index.ts --format cjs,esm --dts",
+    "build": "tsup src/client/index.ts src/server/index.ts src/middleware/index.ts --format cjs,esm --dts",
     "dev": "tsup --watch --dts"
   },
   "dependencies": {
