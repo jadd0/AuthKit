@@ -1,4 +1,5 @@
 import { serverSession } from "@/server/core/singleton";
+import { SESSION_COOKIE_NAME } from "@/shared/constants/auth.constants";
 
 export async function routeSessionRequest(
   segments: string[],
@@ -12,7 +13,7 @@ export async function routeSessionRequest(
   ) {
     case "DELETE":
       // Handle session deletion
-      const deleteToken = parsedCookies["session"] || body.token;
+      const deleteToken = parsedCookies[SESSION_COOKIE_NAME] || body.token;
 
       // Attempt to delete the session
       const deleteResult = await serverSession.deleteSession(deleteToken);
@@ -34,7 +35,7 @@ export async function routeSessionRequest(
 
     case "GET":
       // Handle getting session info
-      const token = parsedCookies["session"] || body.token;
+      const token = parsedCookies[SESSION_COOKIE_NAME] || body.token;
 
       // Attempt to retrieve the session
       const result = await serverSession.getSession(token);

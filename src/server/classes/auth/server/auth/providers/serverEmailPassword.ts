@@ -5,7 +5,7 @@ import {
 } from "@/server/core/singleton";
 import { DatabaseSessionInteractions } from "@/server/db/interfaces/databaseSessionInteractions";
 import { NewUser } from "@/shared/schemas";
-import { DEFAULT_IDLE_TTL } from "@/shared/constants";
+import { DEFAULT_IDLE_TTL, SESSION_COOKIE_NAME } from "@/shared/constants";
 import { userRegisterSchema } from "@/shared/validation/auth";
 import { generateSessionCookie } from "@/shared/utils/session";
 import { z } from "zod";
@@ -55,7 +55,7 @@ export class ServerEmailPassword {
 
     // Generate session cookie
     const cookie = generateSessionCookie(
-      "session",
+      SESSION_COOKIE_NAME,
       session.getSessionToken(),
       authConfig.options.idleTTL || DEFAULT_IDLE_TTL,
     );
@@ -93,7 +93,7 @@ export class ServerEmailPassword {
 
     // Generate session cookie
     const cookie = generateSessionCookie(
-      "session",
+      SESSION_COOKIE_NAME,
       session.getSessionToken(),
       authConfig.options.idleTTL || DEFAULT_IDLE_TTL,
     );

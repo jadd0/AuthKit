@@ -3,6 +3,7 @@ import { auth as getAuth } from "./auth";
 import { auth, authConfig } from "@/server/core/singleton";
 import { DEFAULT_IDLE_TTL } from "@/shared/constants/config.constants";
 import { cookies } from "next/headers";
+import { SESSION_COOKIE_NAME } from "@/shared/constants/auth.constants";
 
 /**
  * Rotates the current user session, and returns a function to set the new session cookie.
@@ -26,7 +27,7 @@ export async function rotateSession() {
 
   // Generate session cookie object
   const cookieConfig = generateSessionCookieObject(
-    "session",
+    SESSION_COOKIE_NAME,
     rotatedSession.getSessionToken(),
     authConfig.options.idleTTL || DEFAULT_IDLE_TTL,
     true,

@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authConfig } from "@/server/core/singleton";
 import {
   checkRoleAccess,
   isPublicRoute,
   redirectToLogin,
 } from "@/middleware/helpers";
 import { auth as getAuth } from "@/server";
+import { SESSION_COOKIE_NAME } from "@/shared/constants";
 
 interface MiddlewareConfig {
   /**
@@ -37,7 +37,7 @@ const DEFAULT_PUBLIC_ROUTES = ["/", "/login", "/register"];
 export function withAuthMiddleware(config: MiddlewareConfig = {}) {
   const {
     publicRoutes = DEFAULT_PUBLIC_ROUTES,
-    loginRoute = authConfig.options.loginRoute || "/login",
+    loginRoute = "/login",
     roleRules = [],
   } = config;
 
@@ -55,8 +55,26 @@ export function withAuthMiddleware(config: MiddlewareConfig = {}) {
       return NextResponse.next();
     }
 
+    // Check for cookie first (cheap check before singleton access)
+    const sessionToken = req.cookies.get(SESSION_COOKIE_NAME)?.value;
+    if (!sessionToken) {
+      return redirectToLogin(req, loginRoute, pathname);
+    }
+
+    // LAZY IMPORT: Only access singleton when actually needed
+    // By this point, user's route handlers have already initialized it
+    const { auth } = await import("@/server/core/singleton");
+
+    // If singleton still not ready, fail safely
+    if (!auth?.sessions) {
+      console.warn(
+        "Auth singleton not initialized, deferring to route handler",
+      );
+      return NextResponse.next();
+    }
+
     // Check authentication
-    const session = await getAuth();
+    const session = auth.sessions.getSessionByToken(sessionToken);
 
     // If no valid session, redirect to login
     if (!session) {
