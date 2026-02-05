@@ -4,7 +4,6 @@ import {
   isPublicRoute,
   redirectToLogin,
 } from "@/middleware/helpers";
-import { auth as getAuth } from "@/server";
 import { SESSION_COOKIE_NAME } from "@/shared/constants";
 
 interface MiddlewareConfig {
