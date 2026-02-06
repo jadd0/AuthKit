@@ -17,7 +17,7 @@ import {
 } from '@/shared/utils/session';
 import { z } from 'zod';
 import z4 from 'zod/v4';
-import { generateCSRFCookie } from '@/shared/utils/session/generateCSRFCookie';
+import { generateCSRFCookie } from '@/shared/utils/CSRF/generateCSRFCookie';
 
 export class ServerEmailPassword {
 	provider: typeof emailPasswordProvider;
