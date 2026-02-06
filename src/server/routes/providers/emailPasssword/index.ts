@@ -53,11 +53,8 @@ export async function routeEmailPasswordProviderRequest(
             user: result.user,
             session: result.session,
           },
-          { status: 200 },
+          { status: 200, headers: result.headers },
         );
-
-        // Set session cookie for the user
-        res.headers.set("Set-Cookie", result.cookie);
 
         return res;
       } else {
@@ -102,11 +99,9 @@ export async function routeEmailPasswordProviderRequest(
             user: result.user,
             session: result.session,
           },
-          { status: 200 },
+          { status: 200, headers: result.headers },
         );
 
-        // Set session cookie for the user
-        res.headers.set("Set-Cookie", result.cookie);
         return res;
       } else {
         // Method not allowed
