@@ -5,3 +5,5 @@
 
 export * from "./generateCSRFCookie";
 export * from "./generateCSRFToken";
+export * from "./verifyCSRF";
+export * from "./rotateCSRFToken";

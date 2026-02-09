@@ -34,6 +34,7 @@ const OptionsSchema = z.object({
   loginRoute: z.string().nullable().optional(), // Optional value for an automatic redirect to login page
   redirectURLs: z.enum([]).optional(), // Optional array for OIDC provider redirect URLs
   stateSecret: z.string().min(8), // Secret used to sign OIDC state payloads
+  CSRFSecret: z.string().min(10), // Secret used to sign CSRF tokens
   roles: z.array(z.string()), // Array of valid user roles
 });
 
@@ -48,7 +49,7 @@ const OptionsSchema = z.object({
 const CredentialsProviderSchema = z.object({
   type: z.literal("credentials"),
   id: z.literal("emailPassword"),
-  saltingRounds: z.number().min(4).optional() // Optional value for hashing algorithm's salting rounds
+  saltingRounds: z.number().min(4).optional(), // Optional value for hashing algorithm's salting rounds
 });
 
 // Google provider – minimal, you do NOT have to pass issuer/scopes
