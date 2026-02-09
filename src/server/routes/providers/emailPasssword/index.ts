@@ -1,12 +1,32 @@
 import { serverAuth } from "@/server/core/singleton";
 import { secureResponse } from "@/shared/utils/addSecurityHeaders";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+
+// TODO: future, maybe try to implement
+// // Possible rate limiter object
+// let loginLimiter: RateLimiter | undefined = undefined;
+
+// const credentialsOptions = authConfig.providers.find(
+//   (p) => p.type === "credentials",
+// );
+
+// // Check if rate limiting is applicable
+// if (credentialsOptions?.rateLimiting) {
+//   const rateLimitingConfig = credentialsOptions.rateLimiting;
+
+//   // Initiate limiter
+//   loginLimiter = new RateLimiter(
+//     rateLimitingConfig.rateLimitTime,
+//     rateLimitingConfig.rateLimitMax,
+//     rateLimitingConfig.rateLimitSkipSuccessful,
+//   );
+// }
 
 /** Used to handle the Email-Password provider request route */
 export async function routeEmailPasswordProviderRequest(
   segments: string[],
   method: string,
-  { body, url, request }: { body: any; url: string; request: Request },
+  { body, url, request }: { body: any; url: string; request: NextRequest },
 ) {
   // Ensure the email-password provider is configured
   if (!serverAuth.providers.emailPassword) {

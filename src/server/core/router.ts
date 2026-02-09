@@ -1,4 +1,3 @@
-// src/server/routes/index.ts
 import { addSecurityHeaders } from "@/shared/utils/addSecurityHeaders";
 import { routeProviderRequest } from "../routes/providers";
 import { routeSessionRequest } from "../routes/session";

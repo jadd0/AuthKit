@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { routeEmailPasswordProviderRequest } from "./emailPasssword";
 import { serverAuth } from "@/server/core/singleton";
 import { routeOIDCProviderRequest } from "./OIDCProvider";
@@ -7,8 +7,8 @@ import { routeOIDCProviderRequest } from "./OIDCProvider";
 export async function routeProviderRequest(
   segments: string[],
   method: string,
-  { body, url, request }: { body: any; url: string; request: Request },
-  cookies: Record<string, string>
+  { body, url, request }: { body: any; url: string; request: NextRequest },
+  cookies: Record<string, string>,
 ): Promise<Response> {
   const providerId = segments[1];
 
@@ -34,6 +34,6 @@ export async function routeProviderRequest(
     method,
     { body, url, request },
     cookies,
-    oidcProvider
+    oidcProvider,
   );
 }
