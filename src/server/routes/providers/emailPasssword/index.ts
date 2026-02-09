@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export async function routeEmailPasswordProviderRequest(
   segments: string[],
   method: string,
-  { body, url }: { body: any; url: string },
+  { body, url, request }: { body: any; url: string; request: Request },
 ) {
   // Ensure the email-password provider is configured
   if (!serverAuth.providers.emailPassword) {

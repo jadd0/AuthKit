@@ -1,10 +1,12 @@
 import { serverSession } from "@/server/core/singleton";
 import { SESSION_COOKIE_NAME } from "@/shared/constants/auth.constants";
+import { verifyCsrf } from "@/shared/utils/CSRF/verifyCSRF";
+import { NextRequest } from "next/server";
 
 export async function routeSessionRequest(
   segments: string[],
   method: string,
-  { body, url }: { body: any; url: string },
+  { body, url, request }: { body: any; url: string; request: NextRequest },
   parsedCookies: Record<string, string>,
 ): Promise<Response> {
   // Handle different session routes based on the path segments
@@ -12,6 +14,19 @@ export async function routeSessionRequest(
     method // TODO: change to segments[1] when more session routes are added
   ) {
     case "DELETE":
+      // Verify CSRF token for session deletion
+      const csrfVerified = verifyCsrf(request);
+
+      if (!csrfVerified) {
+        return new Response(
+          JSON.stringify({ message: "CSRF validation failed" }),
+          {
+            status: 403,
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+      }
+
       // Handle session deletion
       const deleteToken = parsedCookies[SESSION_COOKIE_NAME] || body.token;
 

@@ -7,7 +7,7 @@ import { routeOIDCProviderRequest } from "./OIDCProvider";
 export async function routeProviderRequest(
   segments: string[],
   method: string,
-  { body, url }: { body: any; url: string },
+  { body, url, request }: { body: any; url: string; request: Request },
   cookies: Record<string, string>
 ): Promise<Response> {
   const providerId = segments[1];
@@ -17,6 +17,7 @@ export async function routeProviderRequest(
     return await routeEmailPasswordProviderRequest(segments, method, {
       body,
       url,
+      request,
     });
   }
 
@@ -31,7 +32,7 @@ export async function routeProviderRequest(
   return await routeOIDCProviderRequest(
     segments,
     method,
-    { body, url },
+    { body, url, request },
     cookies,
     oidcProvider
   );

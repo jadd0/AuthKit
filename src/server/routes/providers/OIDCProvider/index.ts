@@ -5,7 +5,7 @@ import { routeOIDCAuthorise, routeOIDCCallback } from "./methods";
 export async function routeOIDCProviderRequest(
   segments: string[],
   method: string,
-  { body, url }: { body: any; url: string },
+  { body, url, request }: { body: any; url: string; request: Request },
   cookies: Record<string, string>,
   oidcProvider: GeneralOIDC
 ): Promise<Response> {

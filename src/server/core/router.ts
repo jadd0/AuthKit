@@ -1,4 +1,5 @@
 import { routeMainAuthRequest } from "@/server/routes";
+import { NextRequest } from "next/server";
 
 // TODO: make so checks for edge and node environments
 // TODO: check incoming ip address against trusted proxies
@@ -7,7 +8,7 @@ import { routeMainAuthRequest } from "@/server/routes";
  * Core auth router used by all HTTP entrypoints.
  * Works with standard Web Request/Response.
  */
-export async function routeAuthRequest(req: Request): Promise<Response> {
+export async function routeAuthRequest(req: NextRequest): Promise<Response> {
   const url = new URL(req.url);
   const method = req.method;
 
@@ -32,7 +33,7 @@ export async function routeAuthRequest(req: Request): Promise<Response> {
   return await routeMainAuthRequest(
     segments,
     method,
-    { body, url: req.url },
+    { body, url: req.url, request: req },
     parsedCookies
   );
 }
