@@ -1,4 +1,5 @@
 import { serverAuth } from "@/server/core/singleton";
+import { secureResponse } from "@/shared/utils/addSecurityHeaders";
 import { NextResponse } from "next/server";
 
 /** Used to handle the Email-Password provider request route */
@@ -28,7 +29,7 @@ export async function routeEmailPasswordProviderRequest(
           );
         } catch (err: any) {
           if (err.message === "Invalid email or password") {
-            return NextResponse.json(
+            return secureResponse(
               { message: "Invalid email or password" },
               { status: 401 },
             );
@@ -38,12 +39,12 @@ export async function routeEmailPasswordProviderRequest(
             err.message === "Email is required" ||
             err.message === "Password is required"
           ) {
-            return NextResponse.json({ message: err.message }, { status: 400 });
+            return secureResponse({ message: err.message }, { status: 400 });
           }
 
           console.error("Login error:", err);
 
-          return NextResponse.json({ message: err }, { status: 500 });
+          return secureResponse({ message: err }, { status: 500 });
         }
 
         // Return response with session cookie set
@@ -59,7 +60,7 @@ export async function routeEmailPasswordProviderRequest(
         return res;
       } else {
         // Method not allowed
-        return NextResponse.json(
+        return secureResponse(
           { message: "Method not allowed" },
           { status: 405 },
         );
@@ -83,7 +84,7 @@ export async function routeEmailPasswordProviderRequest(
         } catch (err) {
           console.error("Registration error:", err);
 
-          return NextResponse.json(
+          return secureResponse(
             {
               message:
                 "An issue occured whilst trying to register the user. Ensure all datafields are as expected.",
@@ -93,7 +94,7 @@ export async function routeEmailPasswordProviderRequest(
         }
 
         // Return response with session cookie set
-        const res = NextResponse.json(
+        const res = secureResponse(
           {
             message: "Registration successful",
             user: result.user,
@@ -105,7 +106,7 @@ export async function routeEmailPasswordProviderRequest(
         return res;
       } else {
         // Method not allowed
-        return NextResponse.json(
+        return secureResponse(
           { message: "Method not allowed" },
           { status: 405 },
         );
@@ -113,6 +114,6 @@ export async function routeEmailPasswordProviderRequest(
 
     // END
     default:
-      return NextResponse.json({ message: "Route not found" }, { status: 404 });
+      return secureResponse({ message: "Route not found" }, { status: 404 });
   }
 }

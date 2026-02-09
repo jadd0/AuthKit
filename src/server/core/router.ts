@@ -1,39 +1,41 @@
-import { routeMainAuthRequest } from "@/server/routes";
-import { NextRequest } from "next/server";
+// src/server/routes/index.ts
+import { addSecurityHeaders } from "@/shared/utils/addSecurityHeaders";
+import { routeProviderRequest } from "../routes/providers";
+import { routeSessionRequest } from "../routes/session";
+import { NextRequest, NextResponse } from "next/server";
 
-// TODO: make so checks for edge and node environments
-// TODO: check incoming ip address against trusted proxies
+export async function routeMainAuthRequest(
+  segments: string[],
+  method: string,
+  context: { body: any; url: string; request: NextRequest },
+  cookies: Record<string, string>,
+): Promise<Response> {
+  let response: Response;
 
-/**
- * Core auth router used by all HTTP entrypoints.
- * Works with standard Web Request/Response.
- */
-export async function routeAuthRequest(req: NextRequest): Promise<Response> {
-  const url = new URL(req.url);
-  const method = req.method;
+  try {
+    if (segments[0] === "provider") {
+      response = await routeProviderRequest(segments, method, context, cookies);
+    } else if (segments[0] === "session") {
+      response = await routeSessionRequest(segments, method, context, cookies);
+    } else {
+      response = new Response(JSON.stringify({ message: "Route not found" }), {
+        status: 404,
+      });
+    }
+  } catch (error) {
+    console.error("Auth route error:", error);
 
-  const body = await req.json().catch(() => ({}));
-  const path = url.pathname; // e.g. /api/auth/provider/emailPassword/login
+    response = new Response(
+      JSON.stringify({ message: "Internal server error" }),
+      { status: 500 },
+    );
+  }
 
-  const cookies = req.headers.get("cookie") || "";
-  const parsedCookies = Object.fromEntries(
-    cookies.split("; ").map((c) => {
-      const [key, ...v] = c.split("=");
-      return [key, v.join("=")];
+  // ALWAYS add security headers to every response
+  return addSecurityHeaders(
+    NextResponse.json(await response.json(), {
+      status: response.status,
+      headers: response.headers,
     }),
-  );
-
-  // Split, remove empty, `api`, and `auth`
-  const segments = path
-    .split("/")
-    .filter((s) => s.length > 0 && s !== "api" && s !== "auth");
-
-  // Handle different routes based on the path segments
-
-  return await routeMainAuthRequest(
-    segments,
-    method,
-    { body, url: req.url, request: req },
-    parsedCookies,
   );
 }
