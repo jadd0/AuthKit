@@ -23,6 +23,14 @@ export class Sessions {
   constructor() {
     this.sessionsById = new Map<string, Session>();
     this.sessionsByToken = new Map<string, Session>();
+
+    // Cleanup old entries every 5 minutes
+    setInterval(
+      async () => {
+        await this.deleteExpiredSessions();
+      },
+      5 * 60 * 1000,
+    );
   }
 
   /** Create a new session (in database first) and store it in both maps */
@@ -193,13 +201,40 @@ export class Sessions {
     }
 
     // Delete from DB
-    if (!await DatabaseSessionInteractions.deleteSessionBySessionId(sessionId)) {
+    if (
+      !(await DatabaseSessionInteractions.deleteSessionBySessionId(sessionId))
+    ) {
       throw new Error(
         "An error occurred whilst attempting to delete the session with ID: " +
           sessionId +
           " from the database.",
       );
     }
+  }
+
+  /** Method to delete all expired sessions */
+  async deleteExpiredSessions() {
+    const { absoluteTTL, idleTTL } = authConfig.options;
+
+    // Delete from database in bulk
+    const deletedCount =
+      await DatabaseSessionInteractions.deleteExpiredSessions(
+        absoluteTTL!,
+        idleTTL!,
+      );
+
+    // Remove from in-memory maps
+    if (deletedCount > 0) {
+      for (const [id, session] of this.sessionsById.entries()) {
+        const isExpired = await this.checkSessionValidity(session);
+        if (!isExpired) {
+          this.sessionsById.delete(id);
+          this.sessionsByToken.delete(session.getSessionToken());
+        }
+      }
+    }
+
+    console.log(`Deleted ${deletedCount} expired sessions from database`);
   }
 
   // END: DELETE
