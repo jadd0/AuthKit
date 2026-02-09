@@ -1,26 +1,36 @@
-import { serverAuth } from "@/server/core/singleton";
+import { AccountRateLimiter } from "@/server/classes/auth/accountRateLimiter";
+import { authConfig, serverAuth } from "@/server/core/singleton";
 import { secureResponse } from "@/shared/utils/addSecurityHeaders";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
-// TODO: future, maybe try to implement
-// // Possible rate limiter object
-// let loginLimiter: RateLimiter | undefined = undefined;
+// Rate limiter instances (optional per developer configuration)
+export let loginRateLimiter: AccountRateLimiter | undefined = undefined;
+export let registrationRateLimiter: AccountRateLimiter | undefined = undefined;
 
-// const credentialsOptions = authConfig.providers.find(
-//   (p) => p.type === "credentials",
-// );
+const credentialsOptions = authConfig.providers.find(
+  (p) => p.type === "credentials",
+);
 
-// // Check if rate limiting is applicable
-// if (credentialsOptions?.rateLimiting) {
-//   const rateLimitingConfig = credentialsOptions.rateLimiting;
+// Check if rate limiting is applicable
+if (credentialsOptions?.rateLimiting) {
+  const rateLimitingConfig = credentialsOptions.rateLimiting;
 
-//   // Initiate limiter
-//   loginLimiter = new RateLimiter(
-//     rateLimitingConfig.rateLimitTime,
-//     rateLimitingConfig.rateLimitMax,
-//     rateLimitingConfig.rateLimitSkipSuccessful,
-//   );
-// }
+  // Initialise login rate limiter
+  loginRateLimiter = new AccountRateLimiter({
+    windowMs: rateLimitingConfig.rateLimitTime,
+    maxAttempts: rateLimitingConfig.rateLimitMaxAttempts,
+    lockoutMs: rateLimitingConfig.rateLimitLockoutTime,
+    skipSuccessfulRequests: rateLimitingConfig.rateLimitSkipSuccessful,
+  });
+
+  // Initialize registration rate limiter (stricter limits)
+  registrationRateLimiter = new AccountRateLimiter({
+    windowMs: rateLimitingConfig.rateLimitTime,
+    maxAttempts: Math.min(3, rateLimitingConfig.rateLimitMaxAttempts), // Max 3 registration attempts
+    lockoutMs: rateLimitingConfig.rateLimitLockoutTime,
+    skipSuccessfulRequests: true,
+  });
+}
 
 /** Used to handle the Email-Password provider request route */
 export async function routeEmailPasswordProviderRequest(
@@ -36,10 +46,23 @@ export async function routeEmailPasswordProviderRequest(
   // Handle email-password provider routes
   switch (segments[2]) {
     // START: LOGIN
-
-    // Handle login route
     case "login":
       if (method === "POST") {
+        // Check rate limiter
+        if (loginRateLimiter) {
+          const rateCheck = loginRateLimiter.checkRateLimit(body.email);
+
+          if (!rateCheck.allowed) {
+            return secureResponse(
+              {
+                message: rateCheck.message,
+                lockedUntil: rateCheck.lockedUntil,
+              },
+              { status: 429 },
+            );
+          }
+        }
+
         // Call the server auth email-password login method
         let result;
         try {
@@ -47,14 +70,57 @@ export async function routeEmailPasswordProviderRequest(
             body.email,
             body.password,
           );
+
+          // SUCCESS - reset rate limit
+          if (loginRateLimiter) {
+            loginRateLimiter.recordAttempt(body.email, true);
+          }
+
+          return secureResponse(
+            {
+              message: "Login successful",
+              user: result.user,
+              session: result.session,
+            },
+            { status: 200, headers: result.headers },
+          );
         } catch (err: any) {
+          // Handle invalid credentials
           if (err.message === "Invalid email or password") {
+            // FAILURE - record failed attempt
+            if (loginRateLimiter) {
+              const recordResult = loginRateLimiter.recordAttempt(
+                body.email,
+                false,
+              );
+
+              // Account now locked
+              if (!recordResult.allowed) {
+                return secureResponse(
+                  {
+                    message: recordResult.message,
+                    lockedUntil: recordResult.lockedUntil,
+                  },
+                  { status: 429 },
+                );
+              }
+
+              return secureResponse(
+                {
+                  message: "Invalid email or password",
+                  remainingAttempts: recordResult.remainingAttempts,
+                },
+                { status: 401 },
+              );
+            }
+
             return secureResponse(
               { message: "Invalid email or password" },
               { status: 401 },
             );
           }
 
+          // Handle validation errors
           if (
             err.message === "Email is required" ||
             err.message === "Password is required"
@@ -62,77 +128,99 @@ export async function routeEmailPasswordProviderRequest(
             return secureResponse({ message: err.message }, { status: 400 });
           }
 
+          // Generic server error
           console.error("Login error:", err);
 
-          return secureResponse({ message: err }, { status: 500 });
+          return secureResponse(
+            { message: "Internal server error" },
+            { status: 500 },
+          );
         }
-
-        // Return response with session cookie set
-        const res = NextResponse.json(
-          {
-            message: "Login successful",
-            user: result.user,
-            session: result.session,
-          },
-          { status: 200, headers: result.headers },
-        );
-
-        return res;
       } else {
-        // Method not allowed
         return secureResponse(
           { message: "Method not allowed" },
           { status: 405 },
         );
       }
-
-    // END
+    // END: LOGIN
 
     // START: REGISTER
-
-    // Handle register route
     case "register":
       if (method === "POST") {
-        // Call the server auth email-password register method
-        let result;
+        // Check if rate limiting is applicable
+        if (registrationRateLimiter) {
+          const rateCheck = registrationRateLimiter.checkRateLimit(
+            body.userConfig.email,
+          );
 
+          if (!rateCheck.allowed) {
+            return secureResponse(
+              {
+                message: rateCheck.message,
+                lockedUntil: rateCheck.lockedUntil,
+              },
+              { status: 429 },
+            );
+          }
+        }
+
+        let result;
         try {
           result = await serverAuth.providers.emailPassword.register(
             { email: body.userConfig.email, name: body.userConfig.name },
             body.password,
           );
+
+          // SUCCESS - reset rate limit
+          if (registrationRateLimiter) {
+            registrationRateLimiter.recordAttempt(body.userConfig.email, true);
+          }
+
+          return secureResponse(
+            {
+              message: "Registration successful",
+              user: result.user,
+              session: result.session,
+            },
+            { status: 201, headers: result.headers }, // 201 Created
+          );
         } catch (err) {
           console.error("Registration error:", err);
+
+          // FAILURE - record attempt
+          if (registrationRateLimiter) {
+            const recordResult = registrationRateLimiter.recordAttempt(
+              body.userConfig.email,
+              false,
+            );
+
+            if (!recordResult.allowed) {
+              return secureResponse(
+                {
+                  message: recordResult.message,
+                  lockedUntil: recordResult.lockedUntil,
+                },
+                { status: 429 },
+              );
+            }
+          }
 
           return secureResponse(
             {
               message:
-                "An issue occured whilst trying to register the user. Ensure all datafields are as expected.",
+                "Registration failed. Please check your details and try again.",
             },
-            { status: 401 },
+            { status: 400 },
           );
         }
-
-        // Return response with session cookie set
-        const res = secureResponse(
-          {
-            message: "Registration successful",
-            user: result.user,
-            session: result.session,
-          },
-          { status: 200, headers: result.headers },
-        );
-
-        return res;
       } else {
-        // Method not allowed
         return secureResponse(
           { message: "Method not allowed" },
           { status: 405 },
         );
       }
+    // END: REGISTER
 
-    // END
     default:
       return secureResponse({ message: "Route not found" }, { status: 404 });
   }

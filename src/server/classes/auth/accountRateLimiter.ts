@@ -83,6 +83,7 @@ export class AccountRateLimiter {
     // Lockout expired - reset
     if (attempt.lockedUntil && now >= attempt.lockedUntil) {
       this.resetRateLimit(normalisedEmail);
+      
       return {
         allowed: true,
         remainingAttempts: this.maxAttempts,
@@ -93,6 +94,7 @@ export class AccountRateLimiter {
     if (now - attempt.windowStart > this.windowMs) {
       // Window expired - reset counter
       this.resetRateLimit(normalisedEmail);
+
       return {
         allowed: true,
         remainingAttempts: this.maxAttempts,
