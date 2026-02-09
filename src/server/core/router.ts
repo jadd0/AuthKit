@@ -20,7 +20,7 @@ export async function routeAuthRequest(req: NextRequest): Promise<Response> {
     cookies.split("; ").map((c) => {
       const [key, ...v] = c.split("=");
       return [key, v.join("=")];
-    })
+    }),
   );
 
   // Split, remove empty, `api`, and `auth`
@@ -34,6 +34,6 @@ export async function routeAuthRequest(req: NextRequest): Promise<Response> {
     segments,
     method,
     { body, url: req.url, request: req },
-    parsedCookies
+    parsedCookies,
   );
 }

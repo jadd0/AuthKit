@@ -1,4 +1,19 @@
+import { CSRF_COOKIE_NAME } from "@/shared/constants";
 import { GetSessionType } from "@/shared/types";
+
+/**
+ * Helper to get cookie value by name
+ */
+function getCookie(name: string): string | undefined {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+
+  if (parts.length === 2) {
+    return parts.pop()?.split(";").shift();
+  }
+
+  return undefined;
+}
 
 /** Wrapper object for client-side Session methods */
 export const ClientSession = {
@@ -6,12 +21,6 @@ export const ClientSession = {
    * You may want to use this to protect a route.
    */
   async getAuth() {
-    console.log("hello from client session");
-    // TODO: find a better way to handle this as cannot import authConfig directly due to server/client separation
-    // if (!auth) {
-    //   throw new Error("Auth module is not initialised");
-    // }
-
     const res = await fetch("/api/auth/session", {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -25,5 +34,31 @@ export const ClientSession = {
 
     const data: GetSessionType = await res.json();
     return data.session;
-  }
-}
+  },
+
+  /**
+   * Delete the current session (logout)
+   */
+  async deleteSession(): Promise<void> {
+    // Get the CSRF token from the cookie
+    const csrfToken = getCookie(CSRF_COOKIE_NAME);
+
+    if (!csrfToken) {
+      throw new Error("CSRF token not found - user may not be logged in");
+    }
+
+    const res = await fetch("/api/auth/session", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "x-authkit-csrf-token": csrfToken, // THIS IS THE KEY LINE
+      },
+      credentials: "include",
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ message: res.statusText }));
+      throw new Error(`Failed to delete session: ${error.message}`);
+    }
+  },
+};
