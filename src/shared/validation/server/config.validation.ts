@@ -45,11 +45,18 @@ const OptionsSchema = z.object({
  * in user code ("google", "emailPassword", etc.).
  */
 
+// Optional IP rate limiting for credential login
+const RateLimiting = z.object({
+  rateLimitTime: z.number(), // Optional value for IP rate limiting on the login route, in ms
+  rateLimitMax: z.number() // Optional value for the max requests in the given time frame for rate limiting on the login route
+});
+
 // Credentials provider – minimal,
 const CredentialsProviderSchema = z.object({
   type: z.literal("credentials"),
   id: z.literal("emailPassword"),
   saltingRounds: z.number().min(4).optional(), // Optional value for hashing algorithm's salting rounds
+  rateLimiting: RateLimiting.optional()
 });
 
 // Google provider – minimal, you do NOT have to pass issuer/scopes
