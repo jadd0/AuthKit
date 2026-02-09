@@ -3,33 +3,40 @@ import { authConfig, serverAuth } from "@/server/core/singleton";
 import { secureResponse } from "@/shared/utils/addSecurityHeaders";
 import { NextRequest } from "next/server";
 
-// Rate limiter instances (optional per developer configuration)
-export let loginRateLimiter: AccountRateLimiter | undefined = undefined;
-export let registrationRateLimiter: AccountRateLimiter | undefined = undefined;
+// Rate limiter instances (initialised lazily)
+let loginRateLimiter: AccountRateLimiter | undefined = undefined;
+let registrationRateLimiter: AccountRateLimiter | undefined = undefined;
+let rateLimitersInitialized = false;
 
-const credentialsOptions = authConfig.providers.find(
-  (p) => p.type === "credentials",
-);
+/**
+ * Initialise rate limiters lazily (only once, when first request comes in)
+ */
+function ensureRateLimitersInitialised() {
+  if (rateLimitersInitialized) return;
 
-// Check if rate limiting is applicable
-if (credentialsOptions?.rateLimiting) {
-  const rateLimitingConfig = credentialsOptions.rateLimiting;
+  const credentialsOptions = authConfig?.providers.find(
+    (p) => p.type === "credentials",
+  );
 
-  // Initialise login rate limiter
-  loginRateLimiter = new AccountRateLimiter({
-    windowMs: rateLimitingConfig.rateLimitTime,
-    maxAttempts: rateLimitingConfig.rateLimitMaxAttempts,
-    lockoutMs: rateLimitingConfig.rateLimitLockoutTime,
-    skipSuccessfulRequests: rateLimitingConfig.rateLimitSkipSuccessful,
-  });
+  if (credentialsOptions?.rateLimiting) {
+    const rateLimitingConfig = credentialsOptions.rateLimiting;
 
-  // Initialize registration rate limiter (stricter limits)
-  registrationRateLimiter = new AccountRateLimiter({
-    windowMs: rateLimitingConfig.rateLimitTime,
-    maxAttempts: Math.min(3, rateLimitingConfig.rateLimitMaxAttempts), // Max 3 registration attempts
-    lockoutMs: rateLimitingConfig.rateLimitLockoutTime,
-    skipSuccessfulRequests: true,
-  });
+    loginRateLimiter = new AccountRateLimiter({
+      windowMs: rateLimitingConfig.rateLimitTime,
+      maxAttempts: rateLimitingConfig.rateLimitMaxAttempts,
+      lockoutMs: rateLimitingConfig.rateLimitLockoutTime,
+      skipSuccessfulRequests: rateLimitingConfig.rateLimitSkipSuccessful,
+    });
+
+    registrationRateLimiter = new AccountRateLimiter({
+      windowMs: rateLimitingConfig.rateLimitTime,
+      maxAttempts: Math.min(3, rateLimitingConfig.rateLimitMaxAttempts),
+      lockoutMs: rateLimitingConfig.rateLimitLockoutTime,
+      skipSuccessfulRequests: true,
+    });
+  }
+
+  rateLimitersInitialized = true;
 }
 
 /** Used to handle the Email-Password provider request route */
@@ -38,6 +45,9 @@ export async function routeEmailPasswordProviderRequest(
   method: string,
   { body, url, request }: { body: any; url: string; request: NextRequest },
 ) {
+  // Initialise rate limiters on first request
+  ensureRateLimitersInitialised();
+
   // Ensure the email-password provider is configured
   if (!serverAuth.providers.emailPassword) {
     throw new Error("Email/password provider not configured");

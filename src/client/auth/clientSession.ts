@@ -1,4 +1,4 @@
-import { CSRF_COOKIE_NAME } from "@/shared/constants";
+import { CSRF_COOKIE_NAME, CSRF_HEADER_NAME } from "@/shared/constants";
 import { GetSessionType } from "@/shared/types";
 
 /**
@@ -51,7 +51,7 @@ export const ClientSession = {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        "x-authkit-csrf-token": csrfToken, // THIS IS THE KEY LINE
+        [CSRF_HEADER_NAME]: csrfToken,
       },
       credentials: "include",
     });
