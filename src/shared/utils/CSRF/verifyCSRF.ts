@@ -7,8 +7,7 @@ import { NextRequest } from "next/server";
 import { CSRFTokenPayload, generateCsrfToken } from "./generateCSRFToken";
 import { authConfig } from "@/server/core/singleton";
 import crypto from "crypto";
-
-const CSRF_TOKEN_MAX_AGE = 3600000; // 1 hour in milliseconds
+import { CSRF_TOKEN_MAX_AGE } from "@/shared/constants";
 
 /** Helper function to verify a CSRF token */
 export function verifyCsrf(request: NextRequest, action?: string): boolean {

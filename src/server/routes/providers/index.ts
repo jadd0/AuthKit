@@ -8,7 +8,7 @@ export async function routeProviderRequest(
   segments: string[],
   method: string,
   { body, url, request }: { body: any; url: string; request: NextRequest },
-  cookies: Record<string, string>,
+  cookies: Record<string, string>
 ): Promise<Response> {
   const providerId = segments[1];
 
@@ -34,6 +34,6 @@ export async function routeProviderRequest(
     method,
     { body, url, request },
     cookies,
-    oidcProvider,
+    oidcProvider
   );
 }
