@@ -286,7 +286,7 @@ export class AccountRateLimiter {
   /**
    * Get statistics about current rate limiting state (for monitoring)
    */
-  getStats(): {
+  private getStats(): {
     totalTrackedAccounts: number;
     lockedAccounts: number;
     accountsNearLimit: number;
