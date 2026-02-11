@@ -1,4 +1,4 @@
-import { logger } from "@/server/core/singleton";
+import { logger } from "@/server/classes/AuthKitLogger";
 import { Discovery, StatePayload } from "@/shared/types";
 import { signStatePayload, verifyStatePayload } from "@/shared/utils/session";
 

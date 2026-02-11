@@ -1,9 +1,10 @@
 import { GeneralOIDC } from "@/server/classes/providers/generalOIDC";
-import { auth, authConfig, logger } from "@/server/core/singleton";
+import { auth, authConfig } from "@/server/core/singleton";
 import { DatabaseAccountInteractions } from "@/server/db/interfaces/databaseAccountInteractions";
 import { DatabaseUserInteractions } from "@/server/db/interfaces/databaseUserInteractions";
 import { SESSION_COOKIE_NAME } from "@/shared/constants/auth.constants";
 import { generateSessionCookie } from "@/shared/utils/session/generateSessionCookie";
+import { logger } from "@/server/classes/AuthKitLogger";
 
 /** Handle OIDC callback requests */
 export async function routeOIDCCallback(
@@ -100,10 +101,7 @@ export async function routeOIDCCallback(
 
       // If account update failed
       if (!updatedAccount) {
-        logger.error(
-          "Failed to update OIDC account for user: ",
-          profile.id,
-        );
+        logger.error("Failed to update OIDC account for user: ", profile.id);
         return new Response("Failed to update OIDC account", { status: 500 });
       }
     } else {

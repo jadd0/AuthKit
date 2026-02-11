@@ -1,5 +1,5 @@
 import { Session } from "@/server/classes/auth/session";
-import { logger } from "@/server/core/singleton";
+import { logger } from "@/server/classes/AuthKitLogger";
 import type { AuthConfig } from "@/shared/types";
 
 /** Function used to run whatever callback is supplied in the auth.ts providers config */

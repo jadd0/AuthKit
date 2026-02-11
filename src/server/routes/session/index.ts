@@ -1,7 +1,8 @@
-import { logger, serverSession } from "@/server/core/singleton";
+import { serverSession } from "@/server/core/singleton";
 import { SESSION_COOKIE_NAME } from "@/shared/constants/auth.constants";
 import { verifyCsrf } from "@/shared/utils/CSRF/verifyCSRF";
 import { NextRequest } from "next/server";
+import { logger } from "@/server/classes/AuthKitLogger";
 
 export async function routeSessionRequest(
   segments: string[],
@@ -10,9 +11,7 @@ export async function routeSessionRequest(
   parsedCookies: Record<string, string>,
 ): Promise<Response> {
   // Handle different session routes based on the path segments
-  switch (
-    method 
-  ) {
+  switch (method) {
     case "DELETE":
       // Verify CSRF token for session deletion
       const csrfVerified = verifyCsrf(request);

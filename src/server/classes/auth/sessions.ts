@@ -3,7 +3,8 @@ import { Session } from "./session";
 import { Session as DatabaseSession } from "@/shared/schemas";
 import { DatabaseUserInteractions } from "@/server/db/interfaces/databaseUserInteractions";
 import { generateSessionToken } from "@/shared/utils/session/generateSessionToken";
-import { authConfig, logger } from "@/server/core/singleton";
+import { authConfig } from "@/server/core/singleton";
+import { logger } from "@/server/classes/AuthKitLogger";
 
 /**
  * @class Sessions

@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { ClientSession } from "../auth/clientSession";
 import { useRouter } from "next/navigation";
-import { logger } from "@/server/core/singleton";
+import { logger } from "@/server/classes/AuthKitLogger";
 
 interface UseLogoutResult {
   logout: () => Promise<void>;

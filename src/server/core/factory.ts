@@ -1,7 +1,8 @@
 import type { AuthConfig } from "@/server/index";
-import { getAuthInstance, logger } from "./singleton";
+import { getAuthInstance } from "./singleton";
 import { routeAuthRequest } from "./router";
 import { NextRequest } from "next/server";
+import { logger } from "@/server/classes/AuthKitLogger";
 
 // Web API Request/Response are standard in Next route handlers
 type WebHandler = (req: NextRequest) => Promise<Response> | Response;
@@ -27,7 +28,7 @@ export default function AuthKit(config: AuthConfig) {
     const auth = await ensure();
 
     if (!auth) {
-      logger.error("Authkit not initialised")
+      logger.error("Authkit not initialised");
     }
   };
 

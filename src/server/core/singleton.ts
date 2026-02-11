@@ -7,6 +7,7 @@ import { dbSchemaValidation } from "@/shared/utils/dbSchemaValidation";
 import { emailPasswordProviderExport } from "@/server/classes/providers";
 import { ServerAuth } from "@/server/classes/auth/server/auth/serverAuth";
 import { ServerSession } from "@/server/classes/auth/server/session/serverSession";
+import { logger } from "@/server/classes/AuthKitLogger";
 
 // Module-scoped references
 let instance: Auth | null = null;
@@ -18,7 +19,6 @@ export let auth: Auth;
 
 export let serverAuth: ServerAuth;
 export let serverSession: ServerSession;
-export const logger = new AuthKitLogger();
 
 // Re-export providers for definite instantiation
 export const emailPasswordProvider = emailPasswordProviderExport;

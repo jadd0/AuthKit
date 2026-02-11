@@ -3,7 +3,7 @@ import { Sessions } from "./sessions";
 import { User } from "./user";
 import { PROVIDERS } from "@/shared/constants";
 import { DatabaseSessionInteractions } from "@/server/db/interfaces/databaseSessionInteractions";
-import { logger } from "@/server/core/singleton";
+import { logger } from "@/server/classes/AuthKitLogger";
 /**
  * Main parent Auth class
  * @class Auth

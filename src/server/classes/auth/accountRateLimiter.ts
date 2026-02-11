@@ -1,4 +1,4 @@
-import { logger } from "@/server/core/singleton";
+import { logger } from "@/server/classes/AuthKitLogger";
 
 interface AccountAttempt {
   failedAttempts: number; // Number of failed attempts in current window

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ClientSession } from "../auth/clientSession";
 import { SessionWithUser } from "@/shared/types";
-import { logger } from "@/server/core/singleton";
+import { logger } from "@/server/classes/AuthKitLogger";
 
 /** React hook to manage and provide authentication state */
 export function useAuth() {
@@ -15,7 +15,7 @@ export function useAuth() {
         setSession(authSession);
         setLoading(false);
       } catch (error) {
-        logger.error("Error fetching authentication session", error)
+        logger.error("Error fetching authentication session", error);
         setLoading(false);
       }
     }

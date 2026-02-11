@@ -1,7 +1,7 @@
 type LogLevel = "debug" | "info" | "warn" | "error";
 
 /** Custom logger for AuthKit for more professional console logging */
-class AuthKitLogger {
+export class AuthKitLogger {
   private enabled: boolean;
 
   constructor() {
@@ -30,3 +30,5 @@ class AuthKitLogger {
     console.error(`[AuthKit:Error] ${message}`, ...args);
   }
 }
+
+export const logger = new AuthKitLogger();

@@ -1,7 +1,8 @@
-import { authConfig, logger } from "@/server/core/singleton";
+import { authConfig } from "@/server/core/singleton";
 import { ServerEmailPassword } from "./providers/serverEmailPassword";
 import { GeneralOIDC } from "@/server/classes/providers/generalOIDC";
 import { PROVIDERS } from "@/shared/constants";
+import { logger } from "@/server/classes/AuthKitLogger";
 
 export class ServerAuth {
   providers: {

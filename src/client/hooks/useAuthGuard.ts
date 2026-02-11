@@ -4,7 +4,7 @@ import { User } from "@/shared/schemas";
 import { useAuth } from "./useAuth";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
-import { logger } from "@/server/core/singleton";
+import { logger } from "@/server/classes/AuthKitLogger";
 
 interface AuthGuardOptions {
   redirectTo?: string; // A path for the situation of an unsuccessful access attempt. Eg: "/login"

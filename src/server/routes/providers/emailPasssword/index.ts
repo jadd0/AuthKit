@@ -1,6 +1,7 @@
 import { AccountRateLimiter } from "@/server/classes/auth/accountRateLimiter";
-import { authConfig, logger, serverAuth } from "@/server/core/singleton";
+import { authConfig, serverAuth } from "@/server/core/singleton";
 import { secureResponse } from "@/shared/utils/addSecurityHeaders";
+import { logger } from "@/server/classes/AuthKitLogger";
 import { NextRequest } from "next/server";
 
 // Rate limiter instances (initialised lazily)

@@ -5,7 +5,7 @@ import {
   redirectToLogin,
 } from "@/middleware/helpers";
 import { SESSION_COOKIE_NAME } from "@/shared/constants";
-import { logger } from "@/server/core/singleton";
+import { logger } from "@/server/classes/AuthKitLogger";
 
 interface MiddlewareConfig {
   /**
