@@ -179,8 +179,8 @@ export class Sessions {
     const session = this.sessionsById.get(sessionId);
     if (!session) return null;
 
-    // Remove old session
-    await this.deleteSession(sessionId);
+    // Remove old session from maps
+    this.sessionsByToken.delete(session.getSessionToken());
 
     // Rotate on the session instance (updates DB)
     const newSession = await session.rotateSession();
