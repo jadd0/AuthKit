@@ -29,7 +29,7 @@ export class Sessions {
       async () => {
         await this.deleteExpiredSessions();
       },
-      5 * 60 * 1000,
+      2 * 60 * 1000, // 2 minutes in ms
     );
   }
 
@@ -232,7 +232,8 @@ export class Sessions {
     // Remove from in-memory maps
     if (deletedCount > 0) {
       for (const [id, session] of this.sessionsById.entries()) {
-        const isExpired = await this.checkSessionValidity(session);
+        const isExpired = await this.checkSessionValidity(session, false);
+
         if (!isExpired) {
           this.sessionsById.delete(id);
           this.sessionsByToken.delete(session.getSessionToken());
@@ -248,7 +249,10 @@ export class Sessions {
   // START: PRIVATE
 
   /** Private method used to delete a session by its token */
-  private async deleteSessionByToken(token: string): Promise<void> {
+  private async deleteSessionByToken(
+    token: string,
+    deleteFromDB = true,
+  ): Promise<void> {
     const session = this.sessionsByToken.get(token);
 
     if (session) {
@@ -256,22 +260,27 @@ export class Sessions {
       this.sessionsByToken.delete(token);
     }
 
-    // Delete from DB
-    const deleteResult = DatabaseSessionInteractions.deleteSessionBySessionId(
-      session!.id,
-    );
-
-    if (!deleteResult) {
-      throw new Error(
-        "An error occurred whilst attempting to delete the session with token: " +
-          token +
-          " from the database.",
+    // Delete from DB if true
+    if (deleteFromDB) {
+      const deleteResult = DatabaseSessionInteractions.deleteSessionBySessionId(
+        session!.id,
       );
+
+      if (!deleteResult) {
+        throw new Error(
+          "An error occurred whilst attempting to delete the session with token: " +
+            token +
+            " from the database.",
+        );
+      }
     }
   }
 
   /** Private method used to delete a session by its ID */
-  private async deleteSessionById(id: string): Promise<void> {
+  private async deleteSessionById(
+    id: string,
+    deleteFromDB = true,
+  ): Promise<void> {
     const session = this.sessionsById.get(id);
 
     if (session) {
@@ -279,23 +288,28 @@ export class Sessions {
       this.sessionsById.delete(id);
     }
 
-    // Delete from DB
-    const deleteResult =
-      await DatabaseSessionInteractions.deleteSessionBySessionId(id);
+    // Delete from DB if true
+    if (deleteFromDB) {
+      const deleteResult =
+        await DatabaseSessionInteractions.deleteSessionBySessionId(id);
 
-    if (!deleteResult) {
-      throw new Error(
-        "An error occurred whilst attempting to delete the session with id: " +
-          id +
-          " from the database.",
-      );
+      if (!deleteResult) {
+        throw new Error(
+          "An error occurred whilst attempting to delete the session with id: " +
+            id +
+            " from the database.",
+        );
+      }
     }
   }
 
   /** Private method to check if a session is still valid based on TTLs
    * If not valid, deletes the session and returns false
    */
-  private async checkSessionValidity(session: Session): Promise<boolean> {
+  private async checkSessionValidity(
+    session: Session,
+    deleteFromDB = true,
+  ): Promise<boolean> {
     const now = Date.now();
 
     // Check for absolute TTL
@@ -305,7 +319,7 @@ export class Sessions {
       const sessionAge = now - session.createdAt.getTime();
       if (sessionAge > absoluteTTL) {
         // Delete session if expired
-        await this.deleteSessionById(session.id);
+        await this.deleteSessionById(session.id, deleteFromDB);
 
         return false;
       }
@@ -319,7 +333,7 @@ export class Sessions {
       if (lastActivity) {
         const idleTime = now - lastActivity.getTime();
         if (idleTime > idleTTL) {
-          await this.deleteSessionById(session.id);
+          await this.deleteSessionById(session.id, deleteFromDB);
 
           return false;
         }
