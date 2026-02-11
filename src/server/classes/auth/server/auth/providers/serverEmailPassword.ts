@@ -118,7 +118,7 @@ export class ServerEmailPassword {
     );
 
     // Generate CSRF token and cookie for secure token validation
-    const CSRFToken = generateSessionToken();
+    const CSRFToken = generateCsrfToken(session.getSessionToken());
     const CSRFCookie = generateCSRFCookie(CSRFToken);
 
     // Append cookies to response header
