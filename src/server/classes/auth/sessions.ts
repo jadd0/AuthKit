@@ -72,7 +72,7 @@ export class Sessions {
   // START: READ
 
   /** Retrieve a session by its ID */
-  getSession(sessionId: string): Session | null {
+  getSession(sessionId: string, updateActivity = true): Session | null {
     const session = this.sessionsById.get(sessionId);
 
     if (!session) {
@@ -80,9 +80,13 @@ export class Sessions {
     }
 
     // Check if session is still valid
-
     if (!this.checkSessionValidity(session)) {
       return null;
+    }
+
+    // Update activity is true if true
+    if (updateActivity) {
+      this.maybeUpdateActivity(session);
     }
 
     return session;
@@ -193,7 +197,7 @@ export class Sessions {
   // START: DELETE
 
   /** Delete a session by its ID from both maps and the database */
-  async deleteSession(sessionId: string): Promise<void> {
+  async deleteSession(sessionId: string): Promise<Boolean> {
     const session = this.sessionsById.get(sessionId);
     if (session) {
       this.sessionsByToken.delete(session.getSessionToken());
@@ -210,6 +214,8 @@ export class Sessions {
           " from the database.",
       );
     }
+
+    return true;
   }
 
   /** Method to delete all expired sessions */
@@ -321,6 +327,24 @@ export class Sessions {
     }
 
     return true;
+  }
+
+  /**
+   * Update activity time only if threshold has passed (avoids DB write spam)
+   */
+  private maybeUpdateActivity(session: Session) {
+    const now = Date.now();
+    const lastActivity = session.getLastActivityTime().getTime();
+    const ACTIVITY_UPDATE_THRESHOLD = 60 * 1000; // 60 seconds
+
+    if (now - lastActivity > ACTIVITY_UPDATE_THRESHOLD) {
+      session.updateLastActivityTime().catch((error) => {
+        console.error(
+          `Failed to update activity for session ${session.id}:`,
+          error,
+        );
+      });
+    }
   }
 
   // END: PRIVATE

@@ -30,18 +30,20 @@ export async function routeSessionRequest(
       // Handle session deletion
       const deleteToken = parsedCookies[SESSION_COOKIE_NAME] || body.token;
 
-      // Attempt to delete the session
-      const deleteResult = await serverSession.deleteSession(deleteToken);
+      try {
+        // Attempt to delete the session
+        const deleteResult = await serverSession.deleteSession(deleteToken);
 
-      // Invalid session
-      if (!deleteResult) {
-        console.error("Invalid session token for deletion:", deleteToken);
+        // Invalid session
+        if (!deleteResult) {
+          console.error("Invalid session token for deletion:", deleteToken);
 
-        return new Response(JSON.stringify({ message: "Invalid session" }), {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
+          return new Response(JSON.stringify({ message: "Invalid session" }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+      } catch (err) {}
 
       return new Response(JSON.stringify({ message: "Session deleted" }), {
         status: 200,
