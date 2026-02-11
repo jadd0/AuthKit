@@ -66,32 +66,5 @@ export function verifyCsrf(request: NextRequest, action?: string): boolean {
     }
   }
 
-  // Defense in depth: Origin/Referer validation
-  if (!verifyOrigin(request)) {
-    throw new Error("CSRF validation failed: Origin verification failed");
-  }
-
   return true;
-}
-
-/** Helper function to verify the origin of a request */
-function verifyOrigin(request: NextRequest): boolean {
-  const origin = request.headers.get("origin");
-  const referer = request.headers.get("referer");
-  const host = request.headers.get("host");
-
-  // Check Origin header (preferred)
-  if (origin) {
-    const originHost = new URL(origin).host;
-    return originHost === host;
-  }
-
-  // Fallback to Referer header
-  if (referer) {
-    const refererHost = new URL(referer).host;
-    return refererHost === host;
-  }
-
-  // If neither header is present, reject (suspicious)
-  return false;
 }
