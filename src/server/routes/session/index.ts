@@ -1,4 +1,4 @@
-import { serverSession } from "@/server/core/singleton";
+import { logger, serverSession } from "@/server/core/singleton";
 import { SESSION_COOKIE_NAME } from "@/shared/constants/auth.constants";
 import { verifyCsrf } from "@/shared/utils/CSRF/verifyCSRF";
 import { NextRequest } from "next/server";
@@ -36,7 +36,7 @@ export async function routeSessionRequest(
 
         // Invalid session
         if (!deleteResult) {
-          console.error("Invalid session token for deletion:", deleteToken);
+          logger.error("Invalid session token for deletion:", deleteToken);
 
           return new Response(JSON.stringify({ message: "Invalid session" }), {
             status: 401,
@@ -59,7 +59,7 @@ export async function routeSessionRequest(
 
       // Invalid session
       if (!result) {
-        console.error("Invalid session token for retrieval: ", token);
+        logger.error("Invalid session token for retrieval: ", token);
 
         return new Response(JSON.stringify({ message: "Invalid session" }), {
           status: 401,

@@ -1,5 +1,5 @@
 import { GeneralOIDC } from "@/server/classes/providers/generalOIDC";
-import { auth, authConfig } from "@/server/core/singleton";
+import { auth, authConfig, logger } from "@/server/core/singleton";
 import { DatabaseAccountInteractions } from "@/server/db/interfaces/databaseAccountInteractions";
 import { DatabaseUserInteractions } from "@/server/db/interfaces/databaseUserInteractions";
 import { SESSION_COOKIE_NAME } from "@/shared/constants/auth.constants";
@@ -58,7 +58,7 @@ export async function routeOIDCCallback(
 
     // If user creation failed
     if (!newUser) {
-      console.error("Failed to create user for profile:", newUser);
+      logger.error("OIDC: Failed to create user for profile: ", profile.id);
       return new Response("Failed to create user", { status: 500 });
     }
 
@@ -74,7 +74,7 @@ export async function routeOIDCCallback(
 
     // If OIDC account linking failed
     if (!linkedAccount) {
-      console.error("Failed to link OIDC account for user:", newUser);
+      logger.error("Failed to link OIDC account for user:", newUser);
       return new Response("Failed to link OIDC account", { status: 500 });
     }
 
@@ -100,9 +100,9 @@ export async function routeOIDCCallback(
 
       // If account update failed
       if (!updatedAccount) {
-        console.error(
-          "Failed to update OIDC account for user:",
-          updatedAccount,
+        logger.error(
+          "Failed to update OIDC account for user: ",
+          profile.id,
         );
         return new Response("Failed to update OIDC account", { status: 500 });
       }
@@ -114,13 +114,13 @@ export async function routeOIDCCallback(
         providerAccountId: profile.id,
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
-        expiresAt: tokens.expires_in, 
+        expiresAt: tokens.expires_in,
       });
 
       if (!account) {
-        console.error(
+        logger.error(
           "Failed to create OIDC account for existing user:",
-          account,
+          profile.id,
         );
         return new Response("Failed to create OIDC account", { status: 500 });
       }
@@ -131,7 +131,7 @@ export async function routeOIDCCallback(
 
   // If session creation failed
   if (!session) {
-    console.error("Failed to create session for user:", user);
+    logger.error("Failed to create session for user:", user.id);
     return new Response("Failed to create session", { status: 500 });
   }
 

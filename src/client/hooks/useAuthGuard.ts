@@ -4,6 +4,7 @@ import { User } from "@/shared/schemas";
 import { useAuth } from "./useAuth";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
+import { logger } from "@/server/core/singleton";
 
 interface AuthGuardOptions {
   redirectTo?: string; // A path for the situation of an unsuccessful access attempt. Eg: "/login"
@@ -55,7 +56,7 @@ export function useAuthGuard(
         try {
           onUnauthorised();
         } catch (error: any) {
-          console.error(
+          logger.error(
             "There was an error whilst trying to use the callback function given for useAuthGuard."
           );
         }
@@ -66,7 +67,7 @@ export function useAuthGuard(
           router.replace(redirectTo);
         }
       } catch (error: any) {
-        console.error(
+        logger.error(
           "There was an issue whilst trying to redirect to the given redirect path/URL for useAuthGuard."
         );
       }

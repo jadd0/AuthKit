@@ -1,5 +1,5 @@
 import { AccountRateLimiter } from "@/server/classes/auth/accountRateLimiter";
-import { authConfig, serverAuth } from "@/server/core/singleton";
+import { authConfig, logger, serverAuth } from "@/server/core/singleton";
 import { secureResponse } from "@/shared/utils/addSecurityHeaders";
 import { NextRequest } from "next/server";
 
@@ -139,7 +139,7 @@ export async function routeEmailPasswordProviderRequest(
           }
 
           // Generic server error
-          console.error("Login error:", err);
+          logger.error("Login error: ", err);
 
           return secureResponse(
             { message: "Internal server error" },
@@ -195,7 +195,7 @@ export async function routeEmailPasswordProviderRequest(
             { status: 201, headers: result.headers }, // 201 Created
           );
         } catch (err) {
-          console.error("Registration error:", err);
+          logger.error("Registration error:", err);
 
           // FAILURE - record attempt
           if (registrationRateLimiter) {

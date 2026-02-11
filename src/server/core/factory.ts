@@ -1,5 +1,5 @@
 import type { AuthConfig } from "@/server/index";
-import { getAuthInstance } from "./singleton";
+import { getAuthInstance, logger } from "./singleton";
 import { routeAuthRequest } from "./router";
 import { NextRequest } from "next/server";
 
@@ -27,7 +27,7 @@ export default function AuthKit(config: AuthConfig) {
     const auth = await ensure();
 
     if (!auth) {
-      console.error("Authkit not initialised")
+      logger.error("Authkit not initialised")
     }
   };
 

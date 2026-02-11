@@ -1,3 +1,5 @@
+import { logger } from "@/server/core/singleton";
+
 interface AccountAttempt {
   failedAttempts: number; // Number of failed attempts in current window
   windowStart: number; // Start of the current rate limit window (timestamp in ms)
@@ -240,8 +242,8 @@ export class AccountRateLimiter {
     toDelete.forEach((email) => this.attempts.delete(email));
 
     if (toDelete.length > 0) {
-      console.log(
-        `[AccountRateLimiter] Cleaned up ${toDelete.length} expired entries`,
+      logger.info(
+        `[RateLimiter] Cleaned up ${toDelete.length} expired entries`,
       );
     }
   }

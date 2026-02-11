@@ -1,11 +1,12 @@
 import { Session } from "@/server/classes/auth/session";
+import { logger } from "@/server/core/singleton";
 import type { AuthConfig } from "@/shared/types";
 
 /** Function used to run whatever callback is supplied in the auth.ts providers config */
 export async function runCallback(
   config: AuthConfig,
   ctx: unknown,
-  credentials: unknown
+  credentials: unknown,
 ): Promise<Session | null> {
   // Gets the callback function from the config
   const fn = config.callbacks?.authorise as
@@ -33,7 +34,7 @@ export async function runCallback(
     return null;
   } catch (e) {
     // If an error occurs, log it and return null
-    console.error("Error in authorisation callback:", e);
+    logger.error("Error in authorisation callback:", e);
     return null;
   }
 }

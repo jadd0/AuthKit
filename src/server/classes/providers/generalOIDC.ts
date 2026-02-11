@@ -1,3 +1,4 @@
+import { logger } from "@/server/core/singleton";
 import { Discovery, StatePayload } from "@/shared/types";
 import { signStatePayload, verifyStatePayload } from "@/shared/utils/session";
 
@@ -21,7 +22,7 @@ export class GeneralOIDC {
     clientId: string,
     clientSecret: string,
     redirectURI: string,
-    scopes: string[]
+    scopes: string[],
   ) {
     this.id = id;
     this.issuer = issuer;
@@ -89,7 +90,7 @@ export class GeneralOIDC {
         .digest();
       hash = digest.buffer.slice(
         digest.byteOffset,
-        digest.byteOffset + digest.byteLength
+        digest.byteOffset + digest.byteLength,
       );
     }
 
@@ -209,7 +210,7 @@ export class GeneralOIDC {
       } catch {
         details = await res.text();
       }
-      console.error("OIDC token error:", res.status, details);
+      logger.error("OIDC token error:", res.status, details);
       throw new Error("Failed to exchange code for tokens");
     }
 
@@ -295,7 +296,7 @@ export class GeneralOIDC {
     codeVerifier: string;
   }) {
     const { state, nonce, redirectTo } = this.decodeStateCookie(
-      params.stateCookie
+      params.stateCookie,
     );
     if (state !== params.stateFromQuery) {
       throw new Error("Invalid state parameter");
@@ -303,7 +304,7 @@ export class GeneralOIDC {
 
     const tokens = await this.exchangeCodeForTokens(
       params.code,
-      params.codeVerifier
+      params.codeVerifier,
     );
 
     if (!tokens.id_token) {

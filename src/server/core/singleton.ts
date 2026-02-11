@@ -18,6 +18,7 @@ export let auth: Auth;
 
 export let serverAuth: ServerAuth;
 export let serverSession: ServerSession;
+export const logger = new AuthKitLogger();
 
 // Re-export providers for definite instantiation
 export const emailPasswordProvider = emailPasswordProviderExport;
@@ -55,12 +56,12 @@ async function init(config: AuthConfig): Promise<Auth> {
     // Test the connection with a simple query
     try {
       await (db as any).execute("SELECT 1");
-      console.log("Database connection successful");
+      logger.info("Database connection successful");
     } catch (error) {
-      console.error("Database connection failed:", error);
+      logger.error("Database connection failed:", error);
       throw new Error(
         "Failed to connect to the database. Please check your database connection method and credentials. Given method: " +
-          (typeof c.db == "string" ? "database URL" : "database Pool")
+          (typeof c.db == "string" ? "database URL" : "database Pool"),
       );
     }
   }
@@ -68,9 +69,8 @@ async function init(config: AuthConfig): Promise<Auth> {
   // Validate the DB against the schema
   try {
     await dbSchemaValidation();
-    console.log("Database Schema validation successful");
   } catch (error: any) {
-    console.error("Schema validation error:", error.message);
+    logger.error("Schema validation error: ", error.message);
   }
 
   // Export the config library-wide
@@ -85,7 +85,7 @@ async function init(config: AuthConfig): Promise<Auth> {
     c.providers,
     c.callbacks,
     c.options.idleTTL || idleTTLLength,
-    c.options.absoluteTTL || absoluteTTLLength
+    c.options.absoluteTTL || absoluteTTLLength,
   );
 
   serverAuth = new ServerAuth();

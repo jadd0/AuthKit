@@ -5,6 +5,7 @@ import {
   redirectToLogin,
 } from "@/middleware/helpers";
 import { SESSION_COOKIE_NAME } from "@/shared/constants";
+import { logger } from "@/server/core/singleton";
 
 interface MiddlewareConfig {
   /**
@@ -66,9 +67,7 @@ export function withAuthMiddleware(config: MiddlewareConfig = {}) {
 
     // If singleton still not ready, fail safely
     if (!auth?.sessions) {
-      console.warn(
-        "Auth singleton not initialized, deferring to route handler",
-      );
+      logger.warn("Auth singleton not initialized, deferring to route handler");
       return NextResponse.next();
     }
 

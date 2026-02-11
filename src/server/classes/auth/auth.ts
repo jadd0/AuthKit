@@ -3,6 +3,7 @@ import { Sessions } from "./sessions";
 import { User } from "./user";
 import { PROVIDERS } from "@/shared/constants";
 import { DatabaseSessionInteractions } from "@/server/db/interfaces/databaseSessionInteractions";
+import { logger } from "@/server/core/singleton";
 /**
  * Main parent Auth class
  * @class Auth
@@ -47,7 +48,9 @@ export class Auth {
     let sessions;
     try {
       sessions = await DatabaseSessionInteractions.getAllSessions();
-      console.log("Retrieved sessions from database:", sessions);
+      logger.info(
+        `Synced ${sessions.length} sessions from database into in-memory store`,
+      );
     } catch (error) {
       throw new Error(
         "An error occurred whilst attempting to retrieve all active database authentication Sessions.",

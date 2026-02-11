@@ -3,7 +3,7 @@ import { Session } from "./session";
 import { Session as DatabaseSession } from "@/shared/schemas";
 import { DatabaseUserInteractions } from "@/server/db/interfaces/databaseUserInteractions";
 import { generateSessionToken } from "@/shared/utils/session/generateSessionToken";
-import { authConfig } from "@/server/core/singleton";
+import { authConfig, logger } from "@/server/core/singleton";
 
 /**
  * @class Sessions
@@ -130,7 +130,7 @@ export class Sessions {
               session.id,
             );
           } catch (error) {
-            console.error(
+            logger.error(
               "Error deleting expired session with ID " +
                 session.id +
                 " from database:",
@@ -166,9 +166,8 @@ export class Sessions {
       this.sessionsByToken.set(session.sessionToken, sessionObj);
     }
 
-    console.log(
-      "Successfully appended database sessions to server session maps." +
-        this.sessionsById,
+    logger.info(
+      `Successfully appended ${this.sessionsById.size} database sessions to server session maps`,
     );
   }
 
@@ -241,7 +240,7 @@ export class Sessions {
       }
     }
 
-    console.log(`Deleted ${deletedCount} expired sessions from database`);
+    logger.info(`Deleted ${deletedCount} expired sessions from database`);
   }
 
   // END: DELETE
@@ -353,7 +352,7 @@ export class Sessions {
 
     if (now - lastActivity > ACTIVITY_UPDATE_THRESHOLD) {
       session.updateLastActivityTime().catch((error) => {
-        console.error(
+        logger.error(
           `Failed to update activity for session ${session.id}:`,
           error,
         );

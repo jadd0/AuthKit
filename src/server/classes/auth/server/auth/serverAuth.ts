@@ -1,4 +1,4 @@
-import { authConfig } from "@/server/core/singleton";
+import { authConfig, logger } from "@/server/core/singleton";
 import { ServerEmailPassword } from "./providers/serverEmailPassword";
 import { GeneralOIDC } from "@/server/classes/providers/generalOIDC";
 import { PROVIDERS } from "@/shared/constants";
@@ -25,7 +25,7 @@ export class ServerAuth {
           provider.clientId,
           provider.clientSecret,
           provider.redirectURI ?? process.env.GOOGLE_REDIRECT_URI!,
-          provider.scopes ?? ["openid", "email", "profile"]
+          provider.scopes ?? ["openid", "email", "profile"],
         );
       }
 
@@ -34,15 +34,15 @@ export class ServerAuth {
         this.providers.oidc = this.providers.oidc || {};
         this.providers.oidc[provider.id] = new GeneralOIDC(
           provider.id,
-          provider.issuer!, 
+          provider.issuer!,
           provider.clientId,
           provider.clientSecret,
-          provider.redirectURI!, 
-          provider.scopes! 
+          provider.redirectURI!,
+          provider.scopes!,
         );
       }
     }
 
-    console.log("Initialized providers:", Object.keys(this.providers));
+    logger.info("Initialized providers:", Object.keys(this.providers));
   }
 }

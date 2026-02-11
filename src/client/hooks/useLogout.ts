@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { ClientSession } from "../auth/clientSession";
 import { useRouter } from "next/navigation";
+import { logger } from "@/server/core/singleton";
 
 interface UseLogoutResult {
   logout: () => Promise<void>;
@@ -29,11 +30,8 @@ export function useLogout(): UseLogoutResult {
       router.push("/login");
     } catch (err) {
       const e = err as Error;
-
       setError(e);
-
-      console.error("Logout error:", e);
-      
+      logger.error("Logout error:", e);
       throw e;
     } finally {
       setLoading(false);
