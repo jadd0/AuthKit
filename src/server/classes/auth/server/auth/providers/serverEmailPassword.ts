@@ -94,12 +94,6 @@ export class ServerEmailPassword {
       );
     }
 
-    // TODO: decide on and implement additional password validation rules (e.g. complexity requirements)
-    // // Basic password validation
-    // if (z.string().min(6).parse(password).length < 6) {
-    //   throw new Error("Password must be at least 6 characters long");
-    // }
-
     // Attempt to register the user via the provider
     const user = await this.provider.register(config, password);
 

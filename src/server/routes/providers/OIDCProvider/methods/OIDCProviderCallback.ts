@@ -49,7 +49,7 @@ export async function routeOIDCCallback(
   if (!user) {
     const newUser = await DatabaseUserInteractions.createUser({
       email: profile.email!,
-      emailVerified: new Date(), // TODO: use actual email verification status if available
+      emailVerified: new Date(),
       username: profile.email!.split("@")[0],
       name: profile.name || "",
       image: profile.image || "",
@@ -69,7 +69,7 @@ export async function routeOIDCCallback(
       providerAccountId: profile.id,
       accessToken: tokens.access_token,
       refreshToken: tokens.refresh_token,
-      expiresAt: tokens.expires_in, // TODO: check?
+      expiresAt: tokens.expires_in,
     });
 
     // If OIDC account linking failed
@@ -114,7 +114,7 @@ export async function routeOIDCCallback(
         providerAccountId: profile.id,
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
-        expiresAt: tokens.expires_in, // TODO: check?
+        expiresAt: tokens.expires_in, 
       });
 
       if (!account) {

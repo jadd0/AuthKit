@@ -59,7 +59,7 @@ export const accounts = pgTable(
     createdAt: timestamp("createdAt").defaultNow().notNull(),
 
     /** A timestamp explaining when the account connection was last updated */
-    updatedAt: timestamp("updatedAt").defaultNow().notNull(), // TODO: add trigger to update on row update
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(), 
   },
   (table) => ({
     /** Composite primary key consisting of user ID (foreign key to users table) and the provider used to  */

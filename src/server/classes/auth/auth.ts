@@ -22,12 +22,12 @@ export class Auth {
     providers: any[],
     callbacks: any,
     idleTTL: number,
-    absoluteTTL: number
+    absoluteTTL: number,
   ) {
     this.providers = providers;
     this.callbacks = callbacks;
     this.sessions = new Sessions();
-    (this.idleTTL = idleTTL), (this.absoluteTTL = absoluteTTL);
+    ((this.idleTTL = idleTTL), (this.absoluteTTL = absoluteTTL));
 
     this.retrieveDatabaseSessions();
   }
@@ -39,7 +39,7 @@ export class Auth {
       await DatabaseSessionInteractions.deleteExpiredSessions();
     } catch (error) {
       throw new Error(
-        "An error occurred whilst attemtping to delete all expired database authentication Sessions."
+        "An error occurred whilst attemtping to delete all expired database authentication Sessions.",
       );
     }
 
@@ -50,48 +50,10 @@ export class Auth {
       console.log("Retrieved sessions from database:", sessions);
     } catch (error) {
       throw new Error(
-        "An error occurred whilst attempting to retrieve all active database authentication Sessions."
+        "An error occurred whilst attempting to retrieve all active database authentication Sessions.",
       );
     }
-    
+
     await this.sessions.appendDatabaseSessions(sessions);
-  }
-
-  async createSession(userId: string) {
-    const user = await DatabaseUserInteractions.getUserById(userId);
-
-    if (!user) {
-      throw new Error(
-        "There has been an issue trying to create a session for the user with the ID: " +
-          userId
-      );
-    }
-
-    const session = await this.sessions.createSession(user);
-  }
-
-  
-
-  // END: CREATE
-
-  // START: READ
-
-  // END: READ
-
-  // START: UPDATE
-  // END: UPDATE
-
-  // START: DELETE
-  // END: DELETE
-
-  private retrieveUserByIdentification(
-    identificationType: string,
-    identificationValue: string
-  ): User | null {
-    return null;
-  }
-
-  hello() {
-    return new Response("Hello from Auth class handler!");
   }
 }

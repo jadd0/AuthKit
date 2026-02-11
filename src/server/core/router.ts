@@ -2,9 +2,6 @@ import { routeMainAuthRequest } from "@/server/routes";
 import { addSecurityHeaders } from "@/shared/utils/addSecurityHeaders";
 import { NextRequest, NextResponse } from "next/server";
 
-// TODO: make so checks for edge and node environments
-// TODO: check incoming ip address against trusted proxies
-
 /**
  * Core auth router used by all HTTP entrypoints.
  * Works with standard Web Request/Response.

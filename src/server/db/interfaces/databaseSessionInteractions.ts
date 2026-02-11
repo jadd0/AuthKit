@@ -42,7 +42,6 @@ export const DatabaseSessionInteractions = {
   // END: READ
 
   // START: UPDATE
-  // TODO: make these into a transaction?
 
   /**
    * Used to rotate a session token by session ID

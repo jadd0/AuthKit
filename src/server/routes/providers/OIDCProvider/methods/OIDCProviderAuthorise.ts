@@ -11,7 +11,6 @@ export async function routeOIDCAuthorise(
   const { authorizationUrl, stateCookieValue, codeVerifier } =
     await provider.createAuthorisationUrl(redirectTo);
 
-  // TODO: store codeVerifier on server side
   const headers = new Headers();
   headers.append(
     "Set-Cookie",

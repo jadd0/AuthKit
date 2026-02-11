@@ -13,10 +13,5 @@ import { ClientAuth } from "./auth/clientAuth";
 export { ClientSession as session };
 export { ClientAuth as auth };
 
-
-export function hello() {
-  console.log("Authkit initialised.");
-}
-
 /** Main hook exports */
 export * from "./hooks/";

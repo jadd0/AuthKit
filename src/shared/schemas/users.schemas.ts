@@ -26,7 +26,7 @@ export const users = pgTable("users", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 
   /** A timestamp explaining when the user was last updated */
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(), // TODO: add trigger to update on row update,
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 
   /** An array of roles for the user, eg: [user, admin]  */
   roles: text("roles")

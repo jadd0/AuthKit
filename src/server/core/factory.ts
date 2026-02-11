@@ -26,8 +26,9 @@ export default function AuthKit(config: AuthConfig) {
   const auth = async (req?: NextRequest) => {
     const auth = await ensure();
 
-    // Check to ensure the auth instance is ready (e.g. database connection established) before allowing any auth operations
-    return auth.hello();
+    if (!auth) {
+      console.error("Authkit not initialised")
+    }
   };
 
   return {

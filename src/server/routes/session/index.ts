@@ -11,7 +11,7 @@ export async function routeSessionRequest(
 ): Promise<Response> {
   // Handle different session routes based on the path segments
   switch (
-    method // TODO: change to segments[1] when more session routes are added
+    method 
   ) {
     case "DELETE":
       // Verify CSRF token for session deletion

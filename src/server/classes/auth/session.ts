@@ -45,21 +45,8 @@ export class Session {
 
   // START: READ
 
-  /** Used to retrieve the authentication state of a user */
-  getIsAuthenticated(): boolean {
-    return this.user !== null;
-
-    // TODO: implement proper auth logic here
-  }
-
-  /** Used to retrieve the user */
-  getUser(): User | null {
-    return this.user;
-  }
-
   /** Used to retrieve the authentication time (when the session was created or last authenticated) */
   getAuthenticationTime(): Date {
-    // TODO: chagne null to whatever
     return this.authenticationTime;
   }
 

@@ -14,7 +14,6 @@ export const ClientEmailPassword = {
     }
 
     // Ensure this is being run on the client side
-    // TODO: better way to check for client side ? and maybe check for all client-side features in general?
     if (typeof window === "undefined") {
       throw new Error(
         "ClientEmailPassword can only be used on the client side",
@@ -36,8 +35,6 @@ export const ClientEmailPassword = {
 
     // Login successful, retrieve data
     const data: Awaited<EmailPasswordProviderLoginPayload> = await res.json();
-
-    // TODO: append to client-side session store and context
 
     return data;
   },
@@ -67,8 +64,6 @@ export const ClientEmailPassword = {
     // Registration successful, retrieve data
     const data: Awaited<EmailPasswordProviderRegisterPayload> =
       await res.json();
-
-    // TODO: append to client-side session store and context
 
     return data;
   },

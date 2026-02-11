@@ -45,7 +45,6 @@ export class EmailPasswordProvider {
     return userWithEmail;
   }
 
-  // TODO: make this into a transaction ? not desperate
   /** Used to register a new user for email-password authentication */
   async register(config: NewUser, password: string): Promise<User> {
     // Attempt to retrieve a user with the provided email before anything else
