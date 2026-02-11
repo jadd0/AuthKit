@@ -5,11 +5,20 @@ import {
 } from "@/server/core/singleton";
 import { DatabaseSessionInteractions } from "@/server/db/interfaces/databaseSessionInteractions";
 import { NewUser } from "@/shared/schemas";
-import { DEFAULT_IDLE_TTL, SESSION_COOKIE_NAME } from "@/shared/constants";
+import {
+  CSRF_COOKIE_NAME,
+  DEFAULT_IDLE_TTL,
+  SESSION_COOKIE_NAME,
+} from "@/shared/constants";
 import { userRegisterSchema } from "@/shared/validation/auth";
-import { generateSessionCookie } from "@/shared/utils/session";
+import {
+  generateSessionCookie,
+  generateSessionToken,
+} from "@/shared/utils/session";
 import { z } from "zod";
 import z4 from "zod/v4";
+import { generateCSRFCookie } from "@/shared/utils/CSRF/generateCSRFCookie";
+import { generateCsrfToken } from "@/shared/utils";
 
 export class ServerEmailPassword {
   provider: typeof emailPasswordProvider;
@@ -54,13 +63,23 @@ export class ServerEmailPassword {
     }
 
     // Generate session cookie
-    const cookie = generateSessionCookie(
+    const sessionCookie = generateSessionCookie(
       SESSION_COOKIE_NAME,
       session.getSessionToken(),
       authConfig.options.idleTTL || DEFAULT_IDLE_TTL,
     );
 
-    return { user, session, cookie };
+    // Generate CSRF token and cookie for secure token validation
+    const CSRFToken = generateCsrfToken(session.getSessionToken());
+    const CSRFCookie = generateCSRFCookie(CSRFToken);
+
+    // Append cookies to response header
+    const headers = new Headers();
+
+    headers.append("Set-Cookie", sessionCookie);
+    headers.append("Set-Cookie", CSRFCookie);
+
+    return { user, session, headers };
   }
 
   /** Use this to register a new user via Email and Password */
@@ -92,12 +111,22 @@ export class ServerEmailPassword {
     const session = await auth.sessions.createSession(user);
 
     // Generate session cookie
-    const cookie = generateSessionCookie(
+    const sessionCookie = generateSessionCookie(
       SESSION_COOKIE_NAME,
       session.getSessionToken(),
       authConfig.options.idleTTL || DEFAULT_IDLE_TTL,
     );
 
-    return { user, session, cookie };
+    // Generate CSRF token and cookie for secure token validation
+    const CSRFToken = generateSessionToken();
+    const CSRFCookie = generateCSRFCookie(CSRFToken);
+
+    // Append cookies to response header
+    const headers = new Headers();
+
+    headers.append("Set-Cookie", sessionCookie);
+    headers.append("Set-Cookie", CSRFCookie);
+
+    return { user, session, headers };
   }
 }

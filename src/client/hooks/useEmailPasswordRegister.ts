@@ -25,7 +25,8 @@ export function useEmailPasswordRegister(): UseEmailPasswordRegisterResult {
         const result = await ClientEmailPassword.register(userConfig, password);
 
         // Set the session cookie
-        document.cookie = result.cookie;
+        //document.cookie = result.cookie;
+        // TODO: ensure that this works with new header based cookie setting approach
 
         return { user: result.user, session: result.session };
       } catch (err) {

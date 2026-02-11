@@ -23,6 +23,14 @@ export class Sessions {
   constructor() {
     this.sessionsById = new Map<string, Session>();
     this.sessionsByToken = new Map<string, Session>();
+
+    // Cleanup old entries every 5 minutes
+    setInterval(
+      async () => {
+        await this.deleteExpiredSessions();
+      },
+      2 * 60 * 1000, // 2 minutes in ms
+    );
   }
 
   /** Create a new session (in database first) and store it in both maps */
@@ -64,7 +72,7 @@ export class Sessions {
   // START: READ
 
   /** Retrieve a session by its ID */
-  getSession(sessionId: string): Session | null {
+  getSession(sessionId: string, updateActivity = true): Session | null {
     const session = this.sessionsById.get(sessionId);
 
     if (!session) {
@@ -72,9 +80,13 @@ export class Sessions {
     }
 
     // Check if session is still valid
-
     if (!this.checkSessionValidity(session)) {
       return null;
+    }
+
+    // Update activity is true if true
+    if (updateActivity) {
+      this.maybeUpdateActivity(session);
     }
 
     return session;
@@ -185,7 +197,7 @@ export class Sessions {
   // START: DELETE
 
   /** Delete a session by its ID from both maps and the database */
-  async deleteSession(sessionId: string): Promise<void> {
+  async deleteSession(sessionId: string): Promise<Boolean> {
     const session = this.sessionsById.get(sessionId);
     if (session) {
       this.sessionsByToken.delete(session.getSessionToken());
@@ -193,13 +205,43 @@ export class Sessions {
     }
 
     // Delete from DB
-    if (!await DatabaseSessionInteractions.deleteSessionBySessionId(sessionId)) {
+    if (
+      !(await DatabaseSessionInteractions.deleteSessionBySessionId(sessionId))
+    ) {
       throw new Error(
         "An error occurred whilst attempting to delete the session with ID: " +
           sessionId +
           " from the database.",
       );
     }
+
+    return true;
+  }
+
+  /** Method to delete all expired sessions */
+  async deleteExpiredSessions() {
+    const { absoluteTTL, idleTTL } = authConfig.options;
+
+    // Delete from database in bulk
+    const deletedCount =
+      await DatabaseSessionInteractions.deleteExpiredSessions(
+        absoluteTTL!,
+        idleTTL!,
+      );
+
+    // Remove from in-memory maps
+    if (deletedCount > 0) {
+      for (const [id, session] of this.sessionsById.entries()) {
+        const isExpired = await this.checkSessionValidity(session, false);
+
+        if (!isExpired) {
+          this.sessionsById.delete(id);
+          this.sessionsByToken.delete(session.getSessionToken());
+        }
+      }
+    }
+
+    console.log(`Deleted ${deletedCount} expired sessions from database`);
   }
 
   // END: DELETE
@@ -207,7 +249,10 @@ export class Sessions {
   // START: PRIVATE
 
   /** Private method used to delete a session by its token */
-  private async deleteSessionByToken(token: string): Promise<void> {
+  private async deleteSessionByToken(
+    token: string,
+    deleteFromDB = true,
+  ): Promise<void> {
     const session = this.sessionsByToken.get(token);
 
     if (session) {
@@ -215,22 +260,27 @@ export class Sessions {
       this.sessionsByToken.delete(token);
     }
 
-    // Delete from DB
-    const deleteResult = DatabaseSessionInteractions.deleteSessionBySessionId(
-      session!.id,
-    );
-
-    if (!deleteResult) {
-      throw new Error(
-        "An error occurred whilst attempting to delete the session with token: " +
-          token +
-          " from the database.",
+    // Delete from DB if true
+    if (deleteFromDB) {
+      const deleteResult = DatabaseSessionInteractions.deleteSessionBySessionId(
+        session!.id,
       );
+
+      if (!deleteResult) {
+        throw new Error(
+          "An error occurred whilst attempting to delete the session with token: " +
+            token +
+            " from the database.",
+        );
+      }
     }
   }
 
   /** Private method used to delete a session by its ID */
-  private async deleteSessionById(id: string): Promise<void> {
+  private async deleteSessionById(
+    id: string,
+    deleteFromDB = true,
+  ): Promise<void> {
     const session = this.sessionsById.get(id);
 
     if (session) {
@@ -238,23 +288,28 @@ export class Sessions {
       this.sessionsById.delete(id);
     }
 
-    // Delete from DB
-    const deleteResult =
-      await DatabaseSessionInteractions.deleteSessionBySessionId(id);
+    // Delete from DB if true
+    if (deleteFromDB) {
+      const deleteResult =
+        await DatabaseSessionInteractions.deleteSessionBySessionId(id);
 
-    if (!deleteResult) {
-      throw new Error(
-        "An error occurred whilst attempting to delete the session with id: " +
-          id +
-          " from the database.",
-      );
+      if (!deleteResult) {
+        throw new Error(
+          "An error occurred whilst attempting to delete the session with id: " +
+            id +
+            " from the database.",
+        );
+      }
     }
   }
 
   /** Private method to check if a session is still valid based on TTLs
    * If not valid, deletes the session and returns false
    */
-  private async checkSessionValidity(session: Session): Promise<boolean> {
+  private async checkSessionValidity(
+    session: Session,
+    deleteFromDB = true,
+  ): Promise<boolean> {
     const now = Date.now();
 
     // Check for absolute TTL
@@ -264,7 +319,7 @@ export class Sessions {
       const sessionAge = now - session.createdAt.getTime();
       if (sessionAge > absoluteTTL) {
         // Delete session if expired
-        await this.deleteSessionById(session.id);
+        await this.deleteSessionById(session.id, deleteFromDB);
 
         return false;
       }
@@ -278,7 +333,7 @@ export class Sessions {
       if (lastActivity) {
         const idleTime = now - lastActivity.getTime();
         if (idleTime > idleTTL) {
-          await this.deleteSessionById(session.id);
+          await this.deleteSessionById(session.id, deleteFromDB);
 
           return false;
         }
@@ -286,6 +341,24 @@ export class Sessions {
     }
 
     return true;
+  }
+
+  /**
+   * Update activity time only if threshold has passed (avoids DB write spam)
+   */
+  private maybeUpdateActivity(session: Session) {
+    const now = Date.now();
+    const lastActivity = session.getLastActivityTime().getTime();
+    const ACTIVITY_UPDATE_THRESHOLD = 60 * 1000; // 60 seconds
+
+    if (now - lastActivity > ACTIVITY_UPDATE_THRESHOLD) {
+      session.updateLastActivityTime().catch((error) => {
+        console.error(
+          `Failed to update activity for session ${session.id}:`,
+          error,
+        );
+      });
+    }
   }
 
   // END: PRIVATE

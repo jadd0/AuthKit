@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { routeProviderRequest } from "./providers";
 import { routeSessionRequest } from "./session";
 import { auth } from "../core/singleton";
@@ -7,16 +7,16 @@ import { auth } from "../core/singleton";
 export async function routeMainAuthRequest(
   segments: string[],
   method: string,
-  { body, url }: { body: any; url: string },
+  { body, url, request }: { body: any; url: string; request: NextRequest },
   parsedCookies: Record<string, string>
 ): Promise<Response> {
   // Provider handler
   switch (segments[0]) {
     case "provider":
-      return await routeProviderRequest(segments, method, { body, url }, parsedCookies);
+      return await routeProviderRequest(segments, method, { body, url, request }, parsedCookies);
 
     case "session":
-      return await routeSessionRequest(segments, method, { body, url }, parsedCookies);
+      return await routeSessionRequest(segments, method, { body, url, request }, parsedCookies);
 
     case "health":
       const authInit = auth ? true : false

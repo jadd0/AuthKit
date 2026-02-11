@@ -8,3 +8,4 @@ export * from "./useAuthGuard";
 export * from "./useProviderLogIn";
 export * from "./useEmailPasswordRegister";
 export * from "./useEmailPasswordLogIn";
+export * from "./useLogout"

@@ -34,6 +34,7 @@ const OptionsSchema = z.object({
   loginRoute: z.string().nullable().optional(), // Optional value for an automatic redirect to login page
   redirectURLs: z.enum([]).optional(), // Optional array for OIDC provider redirect URLs
   stateSecret: z.string().min(8), // Secret used to sign OIDC state payloads
+  CSRFSecret: z.string().min(10), // Secret used to sign CSRF tokens
   roles: z.array(z.string()), // Array of valid user roles
 });
 
@@ -44,11 +45,20 @@ const OptionsSchema = z.object({
  * in user code ("google", "emailPassword", etc.).
  */
 
+// Optional IP rate limiting for credential login
+const RateLimiting = z.object({
+  rateLimitTime: z.number(), // Value for IP rate limiting on the login route, in ms
+  rateLimitMaxAttempts: z.number(), // Value for the max requests in the given time frame for rate limiting on the login route
+  rateLimitSkipSuccessful: z.boolean(), // Value to dictate if should skip successful attempts for rate limiting
+  rateLimitLockoutTime: z.number() // Value to dictate the length of time an account is locked for if exceeds rate limit, in ms
+});
+
 // Credentials provider – minimal,
 const CredentialsProviderSchema = z.object({
   type: z.literal("credentials"),
   id: z.literal("emailPassword"),
-  saltingRounds: z.number().min(4).optional() // Optional value for hashing algorithm's salting rounds
+  saltingRounds: z.number().min(4).optional(), // Optional value for hashing algorithm's salting rounds
+  rateLimiting: RateLimiting.optional()
 });
 
 // Google provider – minimal, you do NOT have to pass issuer/scopes

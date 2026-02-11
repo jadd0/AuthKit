@@ -1,6 +1,6 @@
 import { db } from "@/server/core/singleton";
 import { NewSession, Session, sessions } from "@/shared/schemas";
-import { eq, lt, sql } from "drizzle-orm";
+import { and, eq, lt, or, sql } from "drizzle-orm";
 
 /** A repository object to represent all user authentication sessions interactions in the database */
 export const DatabaseSessionInteractions = {
@@ -140,16 +140,39 @@ export const DatabaseSessionInteractions = {
     return result[0] || null;
   },
 
-  // TODO: implement properly
   /** Used to delete expired sessions from the database, returns number of deleted rows */
-  async deleteExpiredSessions(): Promise<number> {
-    // const result = await db
-    //   .delete(sessions)
-    //   .where(lt(sessions.expires, sql`now()`))
-    //   .run();
+  async deleteExpiredSessions(
+    absoluteTTL?: number,
+    idleTTL?: number,
+  ): Promise<number> {
+    const conditions = [];
 
-    // return result.changes;
-    return 0;
+    // Delete sessions older than absoluteTTL
+    if (absoluteTTL) {
+      const absoluteExpiry = new Date(Date.now() - absoluteTTL);
+      conditions.push(lt(sessions.createdAt, absoluteExpiry));
+    }
+
+    // Delete sessions with idle time exceeding idleTTL
+    if (idleTTL) {
+      const idleExpiry = new Date(Date.now() - idleTTL);
+      conditions.push(
+        and(
+          sql`${sessions.lastActivityAt} IS NOT NULL`,
+          lt(sessions.lastActivityAt, idleExpiry),
+        ),
+      );
+    }
+
+    if (conditions.length === 0) return 0;
+
+    const result = await db
+      .delete(sessions)
+      .where(or(...conditions))
+      .returning();
+
+    return result.length;
   },
+
   // END: DELETE
 };
