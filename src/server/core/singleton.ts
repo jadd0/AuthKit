@@ -1,5 +1,3 @@
-/** Ensures only one object of this kind exists and provides a single point of access to it for any other code, rather than a node module - https://refactoring.guru/design-patterns/singleton/typescript/example */
-
 import type { AuthConfig } from "@/server/index";
 import { AuthConfigSchema } from "@/shared/validation/server/config.validation";
 import { Auth } from "@/server/classes/auth/auth";
@@ -9,23 +7,37 @@ import { ServerAuth } from "@/server/classes/auth/server/auth/serverAuth";
 import { ServerSession } from "@/server/classes/auth/server/session/serverSession";
 import { logger } from "@/server/classes/AuthKitLogger";
 
-// Module-scoped references
-let instance: Auth | null = null;
-let initPromise: Promise<Auth> | null = null;
+// globalThis instead of module-scoped variables
+declare global {
+  var __authkit_instance: Auth | null | undefined;
+  var __authkit_initPromise: Promise<Auth> | null | undefined;
+  var __authkit_db: any;
+  var __authkit_config: AuthConfig | undefined;
+  var __authkit_serverAuth: ServerAuth | undefined;
+  var __authkit_serverSession: ServerSession | undefined;
+}
 
+// Initialse if not exists
+globalThis.__authkit_instance = globalThis.__authkit_instance ?? null;
+globalThis.__authkit_initPromise = globalThis.__authkit_initPromise ?? null;
+
+// Export getters for library-wide access
+export const getDb = () => globalThis.__authkit_db;
+export const getAuthConfig = () => globalThis.__authkit_config;
+export const getAuth = () => globalThis.__authkit_instance;
+export const getServerAuth = () => globalThis.__authkit_serverAuth;
+export const getServerSession = () => globalThis.__authkit_serverSession;
+
+// Legacy exports
 export let db: any;
 export let authConfig: AuthConfig;
 export let auth: Auth;
-
 export let serverAuth: ServerAuth;
 export let serverSession: ServerSession;
 
-// Re-export providers for definite instantiation
 export const emailPasswordProvider = emailPasswordProviderExport;
 
-/** Normalise and validate configuration, connect DB (Node runtime only), and create the Auth instance */
 async function init(config: AuthConfig): Promise<Auth> {
-  // Validate config using Zod schema
   const parsed = AuthConfigSchema.safeParse(config);
 
   if (!parsed.success) {
@@ -37,10 +49,7 @@ async function init(config: AuthConfig): Promise<Auth> {
 
   const c = parsed.data;
 
-  // Lazy import node-postgres drizzle only in Node runtime paths
-
   if (c.db) {
-    // Avoid importing on Edge; rely on runtime heuristics
     const isNode =
       typeof process !== "undefined" &&
       typeof process.versions?.node === "string";
@@ -50,10 +59,9 @@ async function init(config: AuthConfig): Promise<Auth> {
     }
 
     const { drizzle } = await import("drizzle-orm/node-postgres");
-
     db = drizzle(c.db as any);
+    globalThis.__authkit_db = db;
 
-    // Test the connection with a simple query
     try {
       await (db as any).execute("SELECT 1");
       logger.info("Database connection successful");
@@ -66,21 +74,18 @@ async function init(config: AuthConfig): Promise<Auth> {
     }
   }
 
-  // Validate the DB against the schema
   try {
     await dbSchemaValidation();
   } catch (error: any) {
     logger.error("Schema validation error: ", error.message);
   }
 
-  // Export the config library-wide
   authConfig = config;
+  globalThis.__authkit_config = config;
 
-  // Default TTL lengths if not specified by developer
-  const idleTTLLength = 1800 * 1000; // 30 minutes
-  const absoluteTTLLength = 32400 * 1000; // 9 hours
+  const idleTTLLength = 1800 * 1000;
+  const absoluteTTLLength = 32400 * 1000;
 
-  // Create the Auth instance
   auth = new Auth(
     c.providers,
     c.callbacks,
@@ -91,24 +96,37 @@ async function init(config: AuthConfig): Promise<Auth> {
   serverAuth = new ServerAuth();
   serverSession = new ServerSession();
 
+  globalThis.__authkit_serverAuth = serverAuth;
+  globalThis.__authkit_serverSession = serverSession;
+
   return auth;
 }
 
-/** Get or create the singleton instance in a concurrency-safe way */
-export async function getAuthInstance(config: AuthConfig): Promise<Auth> {
-  if (instance) return instance; // fast path
+export async function getAuthInstance(config?: AuthConfig): Promise<Auth> {
+  if (!config) {
+    if (globalThis.__authkit_instance) return globalThis.__authkit_instance;
 
-  if (initPromise) return initPromise; // de-dupe concurrent first calls
+    if (globalThis.__authkit_initPromise) {
+      return globalThis.__authkit_initPromise;
+    }
 
-  initPromise = init(config)
+    throw new Error(
+      "Auth not initialized - call getAuthInstance(config) from a route handler first",
+    );
+  }
+
+  if (globalThis.__authkit_instance) return globalThis.__authkit_instance;
+
+  if (globalThis.__authkit_initPromise) return globalThis.__authkit_initPromise;
+
+  globalThis.__authkit_initPromise = init(config)
     .then((svc) => {
-      instance = svc;
+      globalThis.__authkit_instance = svc;
       return svc;
     })
     .finally(() => {
-      // Clear the promise after resolution/rejection to allow retry if needed
-      initPromise = null;
+      globalThis.__authkit_initPromise = null;
     });
 
-  return initPromise;
+  return globalThis.__authkit_initPromise;
 }

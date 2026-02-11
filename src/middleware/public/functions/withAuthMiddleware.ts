@@ -61,43 +61,43 @@ export function withAuthMiddleware(config: MiddlewareConfig = {}) {
       return redirectToLogin(req, loginRoute, pathname);
     }
 
-    // LAZY IMPORT: Only access singleton when actually needed
-    // By this point, user's route handlers have already initialized it
-    const { auth } = await import("@/server/core/singleton");
+    try {
+      const { getAuthInstance } = await import("@/server/core/singleton");
+      const auth = await getAuthInstance();
 
-    // If singleton still not ready, fail safely
-    if (!auth?.sessions) {
-      logger.warn("Auth singleton not initialized, deferring to route handler");
-      return NextResponse.next();
-    }
+      if (auth?.sessions) {
+        const session = auth.sessions.getSessionByToken(sessionToken);
 
-    // Check authentication
-    const session = auth.sessions.getSessionByToken(sessionToken);
+        if (!session) {
+          return redirectToLogin(req, loginRoute, pathname);
+        }
 
-    // If no valid session, redirect to login
-    if (!session) {
-      return redirectToLogin(req, loginRoute, pathname);
-    }
+        // Check role-based access
+        if (session.user && roleRules.length > 0) {
+          for (const rule of roleRules) {
+            if (rule.pattern.test(pathname)) {
+              const hasAccess = checkRoleAccess(
+                session.user.roles || [],
+                rule.requiredRoles,
+                rule.mode || "any",
+              );
 
-    // Check role-based access rules
-    if (session.user && roleRules.length > 0) {
-      for (const rule of roleRules) {
-        if (rule.pattern.test(pathname)) {
-          const hasAccess = checkRoleAccess(
-            session.user.roles || [],
-            rule.requiredRoles,
-            rule.mode || "any",
-          );
-
-          if (!hasAccess) {
-            // Unauthorized - redirect to login or 403 page
-            return redirectToLogin(req, loginRoute, pathname);
+              if (!hasAccess) {
+                return redirectToLogin(req, loginRoute, pathname);
+              }
+            }
           }
         }
       }
+    } catch (error) {
+      // Singleton not initialized yet - just allow through with cookie check
+      // Route handlers will do full validation
+      logger.info(
+        "Auth singleton not ready, deferring validation to route handler",
+      );
     }
 
-    // User is authenticated and authorized, proceed to the route
+    // User has cookie (and session if singleton was ready)
     return NextResponse.next();
   };
 }
