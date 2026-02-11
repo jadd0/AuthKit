@@ -36,14 +36,6 @@ export class AccountRateLimiter {
     this.lockoutMs = config.lockoutMs;
     this.skipSuccessfulRequests = config.skipSuccessfulRequests ?? true;
     this.attempts = new Map();
-
-    // Cleanup old entries every 5 minutes
-    setInterval(
-      () => {
-        this.cleanupExpiredEntries();
-      },
-      5 * 60 * 1000,
-    );
   }
 
   // END: CREATE
@@ -56,6 +48,8 @@ export class AccountRateLimiter {
    * @returns Result indicating if request is allowed and remaining attempts
    */
   checkRateLimit(email: string): RateLimitResult {
+    this.cleanupExpiredEntries();
+
     const normalisedEmail = email.toLowerCase().trim();
     const now = Date.now();
     const attempt = this.attempts.get(normalisedEmail);
@@ -83,7 +77,7 @@ export class AccountRateLimiter {
     // Lockout expired - reset
     if (attempt.lockedUntil && now >= attempt.lockedUntil) {
       this.resetRateLimit(normalisedEmail);
-      
+
       return {
         allowed: true,
         remainingAttempts: this.maxAttempts,
@@ -140,6 +134,8 @@ export class AccountRateLimiter {
    * @returns Result indicating if the attempt was recorded and if account is now locked
    */
   recordAttempt(email: string, successful: boolean): RateLimitResult {
+    this.cleanupExpiredEntries();
+
     const normalisedEmail = email.toLowerCase().trim();
     const now = Date.now();
 
