@@ -10,7 +10,12 @@ export async function routeAuthRequest(req: NextRequest): Promise<Response> {
   const url = new URL(req.url);
   const method = req.method;
 
-  const body = await req.json().catch(() => ({}));
+  // Only parse JSON body for methods that can have a body
+  let body = {};
+  if (method === "POST" || method === "PUT" || method === "PATCH") {
+    body = await req.json().catch(() => ({}));
+  }
+
   const path = url.pathname; // e.g. /api/auth/provider/emailPassword/login
 
   const cookies = req.headers.get("cookie") || "";
@@ -35,10 +40,5 @@ export async function routeAuthRequest(req: NextRequest): Promise<Response> {
   );
 
   // ALWAYS add security headers to every response
-  return addSecurityHeaders(
-    NextResponse.json(await response.json(), {
-      status: response.status,
-      headers: response.headers,
-    }),
-  );
+  return addSecurityHeaders(response);
 }

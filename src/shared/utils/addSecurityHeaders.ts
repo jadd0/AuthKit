@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 /** Adds security headers to a response */
-export function addSecurityHeaders(response: NextResponse): NextResponse {
+export function addSecurityHeaders(response: Response | NextResponse): Response {
   const isProduction = process.env.NODE_ENV === "production";
 
   // Content Security Policy - prevents XSS
@@ -51,7 +51,7 @@ export function addSecurityHeaders(response: NextResponse): NextResponse {
 export function secureResponse(
   data: any,
   options?: { status?: number; headers?: Headers },
-): NextResponse {
+): Response {
   const response = NextResponse.json(data, {
     status: options?.status || 200,
     headers: options?.headers,
