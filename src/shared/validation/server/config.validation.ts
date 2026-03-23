@@ -69,7 +69,6 @@ const GoogleProviderSchema = z.object({
   clientSecret: z.string(),
   issuer: z.string().optional(),
   redirectURI: z.string().optional(),
-  allowRedirectURIs: z.enum([]),
   scopes: z.array(z.string()).optional(),
 });
 
@@ -81,7 +80,6 @@ const GenericOIDCProviderSchema = z.object({
   clientId: z.string(),
   clientSecret: z.string(),
   redirectURI: z.string().optional(),
-  allowRedirectURIs: z.enum([]),
   scopes: z.array(z.string()).optional(),
 });
 

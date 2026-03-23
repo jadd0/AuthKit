@@ -1,132 +1,214 @@
-# PROJECT INITIALISATION:
+# AuthKit - Next.js App Router Authentication
+
+AuthKit is a modular authentication library for the Next.js App Router. It combines credential‑based and OAuth 2.1/OIDC flows with server‑side sessions, middleware‑based route protection, and a strongly typed developer experience.
+
+This README explains how to initialise AuthKit in a new Next.js App Router project and how to apply the bundled database migrations.
+
+## 1) PROJECT INITIALISATION:
+
+Create a Next.js App Router project in the usual way:
 
 Create a Next.js app normally with:
+
 ```console
 npx create-next-app@latest
 ```
 
-The following describes the recommended approach to instantiating the library.
+Install AuthKit and its peer dependencies (Drizzle, PostgreSQL driver, etc.) according to the package instructions.
 
-### ENV:
+## 2) Environment Configuration:
 
-The .env file should contain the database credentials in either of the following ways, the credentials should be easily found in your database display app.
+AuthKit requires a PostgreSQL database. You can configure the connection either via a single database URL or via a connection pool configuration.
 
-1) **Database URL (RECOMMENDED):**
+Create or update your .env file with one of the following:
+
+### Option 1) **Database URL (RECOMMENDED):**
+
 ```env
 DATABASE_URL: your_database_url
 ```
 
-2) **Database Pool**
+### Option 2) **Database Pool**
+
 ```env
-DATABASE_USER: your_database_username
-DATABASE_HOST: your_database_host
-DATABASE_PASSWORD: your_database_password
-DATABASE_PORT: your_database_port
+DATABASE_USER=your_database_username
+DATABASE_HOST=your_database_host
+DATABASE_PASSWORD=your_database_password
+DATABASE_PORT=your_database_port (probably 5432)
+DATABASE_NAME=your_database_name
 ```
 
-# FILE STRUCTURE:
+AuthKit will use DATABASE_URL if it is present; otherwise it will fall back to the pool configuration.
 
-## /app/auth.ts:
-This is the main entry point to the library. AuthKit is instantiated in here and exposed project-wide. 
+## 3) AuthKit Entry Point (app/auth.ts):
 
-This is the general structure of the file, including explanations for everything:
+Create app/auth.ts. This file instantiates AuthKit once and exposes strongly typed primitives across your application.
 
-```typescript
-import { AuthKit } from "authkit";
-import type { AuthConfig, DatabaseConfig } from "authkit";
+```ts
+// app/auth.ts
+import { AuthKit } from 'authkit';
+import type { AuthConfig, DatabaseConfig } from 'authkit';
 
-// Database object, choose only if using database Pool.
+// If using pool-based configuration, parse the port from the env var.
+const dbPort = process.env.DATABASE_PORT
+	? parseInt(process.env.DATABASE_PORT, 10)
+	: undefined;
 
-// THIS IS ONLY NECESSARY IF PORT IS THROWING A TYPE ERROR FOR PORT BEING A STRING
-const dbPort = parseInt(process.env.DATABASE_PORT!);
+// Pool-based configuration (used if DATABASE_URL is not set).
+const databaseConfig: DatabaseConfig = {
+	user: process.env.DATABASE_USER!,
+	host: process.env.DATABASE_HOST!,
+	password: process.env.DATABASE_PASSWORD!,
+	port: dbPort!,
+	name: process.env.DATABASE_NAME!,
+};
 
-/** Strongly typed database config object for database Pool */
-const database = {
-  user: process.env.DATABASE_USER!,
-  host: process.env.DATABASE_USER!,
-  password: process.env.DATABASE_USER!,
-  port: dbPort,
-  name: process.env.DATABASE_NAME!,
-} satisfies DatabaseConfig;
+// Main AuthKit configuration.
+const config: AuthConfig = {
+	options: {
+		strategy: 'database', // current implementation uses database-backed sessions
+	},
+	db: process.env.DATABASE_URL ?? databaseConfig,
+	providers: [
+		{
+			type: 'credentials',
+			id: 'emailPassword',
+			// Additional provider options (e.g. rate limiting) configured here if required.
+		},
+		// Example OIDC provider:
+		// {
+		//   type: "oidc",
+		//   id: "google",
+		//   issuer: "https://accounts.google.com",
+		//   clientId: process.env.GOOGLE_CLIENT_ID!,
+		//   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+		//   redirectURI: "https://your-app.com/api/auth/provider/google/callback",
+		// },
+	],
+	callbacks: {
+		// Optional: override or extend behaviours here (e.g. profile mapping).
+		// authorise: async (ctx, credentials) => { ... },
+	},
+};
 
-// Strongly typed AuthKit config
-const config = {
-  options: { strategy: "database" }, // or "jwt"
-  db: process.env.DATABASE_URL! || database, // YOUR CHOICE, depends on your desire to use url/pool
-  providers: [
-    { type: "credentials", id: "emailPassword" },
-    // { type: "oidc", issuer: "...", clientId: "...", clientSecret: "...", redirectUri: "..." }
-  ],
-  callbacks: {
-    // authorise: async (ctx, credentials) => { /* return { userId } or null */ },
-  },
-} satisfies AuthConfig;
-
-// The factory returns App Router–ready primitives
-export const { handlers, auth, signOut } = AuthKit(config);
+// The factory returns App Router–ready primitives.
+export const { handlers, auth, middleware } = AuthKit(config);
 ```
 
-We recommend adding the following to your tsconfig.json for ease of access:
+### TypeScript Path Alias (optional, recommended)
 
-Inside "compilerOptions":
+To make imports less verbose, add a path alias in your tsconfig.json:
+
 ```json
-  "paths": {
-    ...
-    "@/auth": ["app/auth"]
-  }
+{
+	"compilerOptions": {
+		// ...
+		"paths": {
+			"@/auth": ["app/auth"]
+		}
+	}
+}
 ```
 
-This will allow an easy alias to the main auth file from anywhere in your app.
+This allows you to import from "@/auth" anywhere in your app.
 
+## 4) Auth Route (app/api/auth/[...authkit]/route.ts):
 
-## /app/api/auth/[...authkit]/route.ts:
-This is the main endpoint for any auth callbacks. You may route this however you want, however this is the recommended blueprint:
+AuthKit exposes request handlers for your authentication endpoints. In a typical setup you route both GET and POST to handlers returned by the factory.
 
-```typescript
-import { handlers } from "@/auth";
+Create app/api/auth/[...authkit]/route.ts:
 
-/** This acts as the main GET request endpoint */
+```ts
+// app/api/auth/[...authkit]/route.ts
+import { handlers } from '@/auth';
+
+/**
+ * Main GET endpoint for AuthKit (e.g., OAuth callbacks, session retrieval).
+ */
 export const GET = handlers.GET;
 
-/** This acts as the main POST request endpoint */
+/**
+ * Main POST endpoint for AuthKit (e.g., credential login/register).
+ */
 export const POST = handlers.POST;
 ```
 
-However you choose to route from here is up to you.
+If you prefer a different route structure, you can re-export handlers.GET / handlers.POST from whatever path you choose, as long as it is consistent with the redirect URIs configured for OIDC providers.
 
-# DATABASE SETUP:
+## 5) Middleware Integration (proxy.ts):
 
-To use AuthKit, you must ensure your database schema is up-to-date with the provided migration files.
+AuthKit provides middleware to protect routes and enforce role‑based access control.
 
-AuthKit has been developed using Drizzle ORM (<link href="https://orm.drizzle.team">Drizzle</link>), so naturally we will recommend you to use the same. However, we also provide a manual PostgreSQL migration script.
+Create or update proxy.ts in the project root:
 
-Choose one of the following to migrate the database schema in a one line command.
+```ts
+// proxy.ts
+import { middleware as withAuthMiddleware } from '@/auth';
 
-## DRIZZLE MIGRATION:
+export const config = {
+	// Define the set of routes that should run through this middleware.
+	// Adjust this to match your application.
+	matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+};
 
-1. Ensure you have drizzle-orm and drizzle-kit installed.
+export default withAuthMiddleware({
+	// Routes that do NOT require authentication.
+	publicRoutes: ['/login', '/register'],
 
-2. In your project root, run:
+	// Route to redirect unauthenticated users to.
+	loginRoute: '/login',
 
-```console
+	// Optional role-based rules.
+	// Example: restrict /admin to users with the "admin" role.
+	roleRules: [
+		{
+			pattern: /^\/admin/,
+			requiredRoles: ['admin'],
+			mode: 'all', // "any" or "all"
+		},
+	],
+});
+```
+
+This middleware checks for a valid session cookie, retrieves the session when possible, and enforces any role rules you define. Public routes are always allowed through.
+
+## 6. Database Setup and Migrations:
+
+AuthKit assumes a PostgreSQL schema matching its internal user, session, and account models. The library ships with Drizzle migrations and a Drizzle configuration so you can apply the schema automatically.
+
+You have two options:
+
+- Drizzle migrations (recommended)
+- Manual SQL migrations (psql / PowerShell)
+
+### 6.1) Drizzle Migrations (recommended):
+
+1. Ensure you have drizzle-orm and drizzle-kit installed in your Next.js project.
+2. From your project root, run:
+
+```bash
 npx drizzle-kit migrate:pg --config ./node_modules/authkit/drizzle.config.ts
 ```
 
-This automatically applies all migrations in the drizzle/ folder shipped with the library.
+This command applies all migrations located under ./node_modules/authkit/drizzle/ to the database described by your DATABASE_URL or pool config.
 
-## MANUAL MIGRATION:
+If you see harmless errors like relation ... already exists, it usually indicates that a migration step has already been applied.
 
-To keep your database schema up to date, **run all migration files in order**.
+### 6.2) Manual Migrations (SQL files):
 
-1. **Locate migration files:**
+If you prefer to run the SQL scripts yourself, you can apply the bundled .sql files directly.
 
-```
+#### Locate the migration files:
+
+All migration scripts are shipped under:
+
+```text
 ./node_modules/authkit/drizzle/
 ```
 
-Migration filenames are numbered for order, for example:
+They are numbered for ordering, for example:
 
-```
+```text
 0000_initial.sql
 0001_add_accounts_table.sql
 0002_update_users.sql
@@ -134,25 +216,71 @@ Migration filenames are numbered for order, for example:
 0015_latest_change.sql
 ```
 
-2. **Run each migration in order:**
+#### Unix-like shells (bash/zsh):
 
-(where [YOUR_DATABASE_URL is your database URL])
+Make sure psql is installed and your database URL is available.
 
-```console
+```bash
+# Replace YOUR_DATABASE_URL with your real connection string.
 for file in ./node_modules/authkit/drizzle/*.sql; do
-  psql YOUR_DATABASE_URL -f "$file"
+  psql "YOUR_DATABASE_URL" -f "$file"
 done
 ```
 
-- This safely updates your database whether you are initialising or upgrading.
-- Harmless errors like `"relation ... already exists"` just mean a migration step has already been applied.
+Example:
 
-For manual users, if an error is thrown stating that your schema does not match, try running the above.
+```bash
+for file in ./node_modules/authkit/drizzle/*.sql; do
+  psql "postgresql://user:password@localhost:5432/mydb" -f "$file"
+done
+```
 
-**ALWAYS BACK UP YOUR DATABASE BEFORE APPLYING MIGRATIONS, JUST IN CASE.**
+#### PowerShell (Windows):
 
-**Important:**
+In PowerShell, you can achieve the same loop with:
 
-- Do not skip any migration files.
-- Do not run only the last or highest-numbered migration; all must be applied in order.
-- If you see schema mismatch errors, double-check your table and column types match the expected migrations.
+```powershell
+$files = Get-ChildItem -Path ".\node_modules\authkit\drizzle\*.sql" | Sort-Object Name
+$connectionString = "YOUR_DATABASE_URL"
+
+foreach ($file in $files) {
+  & psql $connectionString -f $file.FullName
+}
+```
+
+Example:
+
+```powershell
+$files = Get-ChildItem -Path ".\node_modules\authkit\drizzle\*.sql" | Sort-Object Name
+$connectionString = "postgresql://user:password@localhost:5432/mydb"
+
+foreach ($file in $files) {
+  & psql $connectionString -f $file.FullName
+}
+```
+
+#### Important notes for manual migration:
+* Run all migration files in order. Do not skip earlier migrations or run only the highest-numbered file.
+
+* If you see errors such as relation ... already exists, they usually indicate that the migration step has already been applied and can be safely ignored.
+
+* If you see schema mismatch errors from AuthKit at runtime, re-run the migration loop to ensure your schema matches the version shipped with the library.
+
+* Always back up your database before applying migrations.
+
+## 7) Summary:
+At minimum, to get AuthKit running you must:
+
+1) Provide PostgreSQL connection details via .env.
+
+2) Create app/auth.ts and instantiate AuthKit(config).
+
+3) Wire up app/api/auth/[...authkit]/route.ts with handlers.GET and handlers.POST.
+
+4) Configure middleware.ts with withAuthMiddleware if you want middleware-based route protection.
+
+5) Apply the shipped database migrations via Drizzle or manual SQL.
+
+From there, you can add OIDC providers, customise callbacks, and extend role‑based access control as your application requires.
+
+Happy shipping!
