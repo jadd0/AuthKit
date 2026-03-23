@@ -303,6 +303,7 @@ All server-side APIs are exposed via your app/auth.ts entry point.
 
 Example app/auth.ts:
 
+```ts
 import { AuthKit } from "authkit";
 import type { AuthConfig, DatabaseConfig } from "authkit";
 
@@ -347,6 +348,7 @@ const config: AuthConfig = {
 };
 
 export const { handlers, auth, middleware } = AuthKit(config);
+```
 
 ### 1.1 auth – Getting the Current Session (Server Components / Route Handlers)
 
