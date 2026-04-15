@@ -4,6 +4,8 @@ import { getAuthConfig, getAuth } from "@/server/core/singleton";
 import { DEFAULT_IDLE_TTL } from "@/shared/constants/config.constants";
 import { cookies } from "next/headers";
 import { SESSION_COOKIE_NAME } from "@/shared/constants/auth.constants";
+import { generateCSRFCookie } from "@/shared/utils/CSRF/generateCSRFCookie";
+import { generateCsrfToken } from "@/shared/utils/CSRF/generateCSRFToken";
 
 /**
  * Rotates the current user session, and returns a function to set the new session cookie.
@@ -28,7 +30,6 @@ export async function rotateSession() {
     throw new Error("Failed to rotate session.");
   }
 
-
   // Generate session cookie object
   const cookieConfig = generateSessionCookieObject(
     SESSION_COOKIE_NAME,
@@ -36,6 +37,8 @@ export async function rotateSession() {
     authConfig?.options.idleTTL || DEFAULT_IDLE_TTL,
     true,
   );
+  const csrfToken = generateCsrfToken(rotatedSession.getSessionToken());
+  const csrfCookie = generateCSRFCookie(csrfToken);
 
   // Return the rotated session and a function to set the cookie
   return {
@@ -43,6 +46,7 @@ export async function rotateSession() {
     setCookie: async () => {
       const cookieStore = await cookies();
       cookieStore.set(cookieConfig);
+      cookieStore.set(JSON.parse(csrfCookie));
     },
   };
 }

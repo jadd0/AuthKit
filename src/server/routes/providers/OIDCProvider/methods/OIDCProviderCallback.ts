@@ -5,6 +5,8 @@ import { DatabaseUserInteractions } from "@/server/db/interfaces/databaseUserInt
 import { SESSION_COOKIE_NAME } from "@/shared/constants/auth.constants";
 import { generateSessionCookie } from "@/shared/utils/session/generateSessionCookie";
 import { logger } from "@/server/classes/AuthKitLogger";
+import { generateCSRFCookie } from "@/shared/utils/CSRF/generateCSRFCookie";
+import { generateCsrfToken } from "@/shared/utils/CSRF/generateCSRFToken";
 
 /** Handle OIDC callback requests */
 export async function routeOIDCCallback(
@@ -13,7 +15,6 @@ export async function routeOIDCCallback(
   requestUrl: string,
 ): Promise<Response> {
   const authConfig = getAuthConfig();
-
   const auth = getAuth();
 
   const url = new URL(requestUrl);
@@ -144,9 +145,12 @@ export async function routeOIDCCallback(
     session.getSessionToken(),
     authConfig!.options.idleTTL ?? DEFAULTIDLETTL,
   );
+  const csrfToken = generateCsrfToken(session.getSessionToken());
+  const csrfCookie = generateCSRFCookie(csrfToken);
 
   const headers = new Headers();
   headers.append("Set-Cookie", sessionCookie);
+  headers.append("Set-Cookie", csrfCookie);
 
   headers.set("Location", redirectTo ?? "/");
   return new Response(null, { status: 302, headers });

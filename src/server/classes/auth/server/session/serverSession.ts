@@ -1,5 +1,7 @@
-import { auth, authConfig } from "@/server/core/singleton";
+import { getAuth, getAuthConfig } from "@/server/core/singleton";
 import { DEFAULT_IDLE_TTL, SESSION_COOKIE_NAME } from "@/shared/constants";
+import { generateCSRFCookie } from "@/shared/utils/CSRF/generateCSRFCookie";
+import { generateCsrfToken } from "@/shared/utils/CSRF/generateCSRFToken";
 import { generateSessionCookie } from "@/shared/utils/session";
 import z from "zod";
 
@@ -8,13 +10,16 @@ export class ServerSession {
 
   /** Use this to get a session by its token, called from route handler after being invoked by clientSession */
   async getSession(token: string) {
+    const auth = getAuth();
+    const authConfig = getAuthConfig();
+
     // Basic validation
     if (z.string().min(1).parse(token).length === 0) {
       throw new Error("Token is required");
     }
 
     // Attempt to retrieve the session by its token
-    const session = await auth.sessions.getSessionByToken(token);
+    const session = await auth?.sessions.getSessionByToken(token);
 
     // Session not found
     if (!session) {
@@ -32,21 +37,27 @@ export class ServerSession {
     const cookie = generateSessionCookie(
       SESSION_COOKIE_NAME,
       session.getSessionToken(),
-      authConfig.options.idleTTL || DEFAULT_IDLE_TTL,
+      authConfig?.options.idleTTL || DEFAULT_IDLE_TTL,
     );
 
-    return { session, cookie };
+    const csrfToken = generateCsrfToken(session.getSessionToken());
+    const csrfCookie = generateCSRFCookie(csrfToken);
+
+    return { session, cookie, csrfCookie };
   }
 
   /** Use this to delete a session by its token, called from route handler after being invoked by clientSession */
   async deleteSession(token: string) {
+    const auth = getAuth();
+    const authConfig = getAuthConfig();
+
     // Basic validation
     if (z.string().min(1).parse(token).length === 0) {
       throw new Error("Token is required");
     }
 
     // Attempt to retrieve the session by its token
-    const session = await auth.sessions.getSessionByToken(token);
+    const session = await auth?.sessions.getSessionByToken(token);
 
     // Session not found
     if (!session) {
@@ -54,7 +65,7 @@ export class ServerSession {
     }
 
     // Delete the session
-    const result = await auth.sessions.deleteSession(session.id);
+    const result = await auth?.sessions.deleteSession(session.id);
 
     return result;
   }

@@ -75,6 +75,7 @@ export async function routeSessionRequest(
       });
 
       res.headers.set("Set-Cookie", result.cookie);
+      res.headers.append("Set-Cookie", result.csrfCookie);
 
       return res;
     default:

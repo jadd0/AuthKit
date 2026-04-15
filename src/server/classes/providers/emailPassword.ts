@@ -1,7 +1,6 @@
 import { DatabaseAccountInteractions } from "@/server/db/interfaces/databaseAccountInteractions";
 import { DatabaseUserInteractions } from "@/server/db/interfaces/databaseUserInteractions";
 import { NewUser, User } from "@/shared/schemas";
-import { authConfig } from "@/server/core/singleton";
 import * as bcrypt from "bcrypt";
 
 /**

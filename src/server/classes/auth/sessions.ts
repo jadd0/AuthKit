@@ -3,7 +3,7 @@ import { Session } from "./session";
 import { Session as DatabaseSession } from "@/shared/schemas";
 import { DatabaseUserInteractions } from "@/server/db/interfaces/databaseUserInteractions";
 import { generateSessionToken } from "@/shared/utils/session/generateSessionToken";
-import { authConfig } from "@/server/core/singleton";
+import { getAuthConfig } from "@/server/core/singleton";
 import { logger } from "@/server/classes/AuthKitLogger";
 
 /**
@@ -119,11 +119,13 @@ export class Sessions {
 
   /** Method used to append database User Sessions to server-friendly maps */
   async appendDatabaseSessions(databaseSessions: DatabaseSession[]) {
+    const authConfig = getAuthConfig();
+
     // Programmatically append each User to a Session object
     for (const session of databaseSessions) {
       // Remove expired sessions
       const now = Date.now();
-      const absoluteTTL = authConfig.options.absoluteTTL;
+      const absoluteTTL = authConfig?.options.absoluteTTL;
 
       if (absoluteTTL) {
         const sessionAge = now - session.createdAt.getTime();
@@ -223,7 +225,9 @@ export class Sessions {
 
   /** Method to delete all expired sessions */
   async deleteExpiredSessions() {
-    const { absoluteTTL, idleTTL } = authConfig.options;
+    const authConfig = getAuthConfig();
+
+    const { absoluteTTL, idleTTL } = authConfig!.options;
 
     // Delete from database in bulk
     const deletedCount =
@@ -313,10 +317,12 @@ export class Sessions {
     session: Session,
     deleteFromDB = true,
   ): Promise<boolean> {
+    const authConfig = getAuthConfig();
+
     const now = Date.now();
 
     // Check for absolute TTL
-    const absoluteTTL = authConfig.options.absoluteTTL;
+    const absoluteTTL = authConfig?.options.absoluteTTL;
 
     if (absoluteTTL) {
       const sessionAge = now - session.createdAt.getTime();
@@ -329,7 +335,7 @@ export class Sessions {
     }
 
     // Check for idle TTL
-    const idleTTL = authConfig.options.idleTTL;
+    const idleTTL = authConfig?.options.idleTTL;
 
     if (idleTTL) {
       const lastActivity = session.getLastActivityTime();
