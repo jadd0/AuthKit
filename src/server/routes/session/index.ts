@@ -1,4 +1,4 @@
-import { serverSession } from "@/server/core/singleton";
+import { getServerSession } from "@/server/core/singleton";
 import { SESSION_COOKIE_NAME } from "@/shared/constants/auth.constants";
 import { verifyCsrf } from "@/shared/utils/CSRF/verifyCSRF";
 import { NextRequest } from "next/server";
@@ -10,6 +10,8 @@ export async function routeSessionRequest(
   { body, url, request }: { body: any; url: string; request: NextRequest },
   parsedCookies: Record<string, string>,
 ): Promise<Response> {
+  const serverSession = getServerSession();
+
   // Handle different session routes based on the path segments
   switch (method) {
     case "DELETE":
@@ -31,7 +33,7 @@ export async function routeSessionRequest(
 
       try {
         // Attempt to delete the session
-        const deleteResult = await serverSession.deleteSession(deleteToken);
+        const deleteResult = await serverSession?.deleteSession(deleteToken);
 
         // Invalid session
         if (!deleteResult) {
@@ -54,7 +56,7 @@ export async function routeSessionRequest(
       const token = parsedCookies[SESSION_COOKIE_NAME] || body.token;
 
       // Attempt to retrieve the session
-      const result = await serverSession.getSession(token);
+      const result = await serverSession?.getSession(token);
 
       // Invalid session
       if (!result) {

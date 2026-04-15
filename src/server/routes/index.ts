@@ -1,29 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
 import { routeProviderRequest } from "./providers";
 import { routeSessionRequest } from "./session";
-import { auth } from "../core/singleton";
+import { getAuth } from "../core/singleton";
 
 /** Used to handle the first segment route */
 export async function routeMainAuthRequest(
   segments: string[],
   method: string,
   { body, url, request }: { body: any; url: string; request: NextRequest },
-  parsedCookies: Record<string, string>
+  parsedCookies: Record<string, string>,
 ): Promise<Response> {
+  const auth = getAuth();
+
   // Provider handler
   switch (segments[0]) {
     case "provider":
-      return await routeProviderRequest(segments, method, { body, url, request }, parsedCookies);
+      return await routeProviderRequest(
+        segments,
+        method,
+        { body, url, request },
+        parsedCookies,
+      );
 
     case "session":
-      return await routeSessionRequest(segments, method, { body, url, request }, parsedCookies);
+      return await routeSessionRequest(
+        segments,
+        method,
+        { body, url, request },
+        parsedCookies,
+      );
 
     case "health":
-      const authInit = auth ? true : false
-      ;
+      const authInit = auth ? true : false;
       return NextResponse.json(
         { status: "ok", authInitialized: authInit },
-        { status: 200 }
+        { status: 200 },
       );
 
     default:

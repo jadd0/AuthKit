@@ -1,5 +1,5 @@
 import { GeneralOIDC } from "@/server/classes/providers/generalOIDC";
-import { auth, authConfig } from "@/server/core/singleton";
+import { getAuth, getAuthConfig } from "@/server/core/singleton";
 import { DatabaseAccountInteractions } from "@/server/db/interfaces/databaseAccountInteractions";
 import { DatabaseUserInteractions } from "@/server/db/interfaces/databaseUserInteractions";
 import { SESSION_COOKIE_NAME } from "@/shared/constants/auth.constants";
@@ -12,6 +12,10 @@ export async function routeOIDCCallback(
   cookies: Record<string, string>,
   requestUrl: string,
 ): Promise<Response> {
+  const authConfig = getAuthConfig();
+
+  const auth = getAuth();
+
   const url = new URL(requestUrl);
   const code = url.searchParams.get("code");
   const stateFromQuery = url.searchParams.get("state");
@@ -125,7 +129,7 @@ export async function routeOIDCCallback(
     }
   }
 
-  const session = await auth.sessions.createSession(user);
+  const session = await auth!.sessions.createSession(user);
 
   // If session creation failed
   if (!session) {
@@ -138,7 +142,7 @@ export async function routeOIDCCallback(
   const sessionCookie = generateSessionCookie(
     SESSION_COOKIE_NAME,
     session.getSessionToken(),
-    authConfig.options.idleTTL ?? DEFAULTIDLETTL,
+    authConfig!.options.idleTTL ?? DEFAULTIDLETTL,
   );
 
   const headers = new Headers();

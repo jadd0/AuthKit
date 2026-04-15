@@ -1,17 +1,17 @@
 import { DatabaseUserInteractions } from "@/server/db/interfaces/databaseUserInteractions";
 import { auth as getAuth } from "./auth";
-import { authConfig } from "@/server/core/singleton";
+import { getAuthConfig } from "@/server/core/singleton";
 import { rotateSession } from "./rotateSession";
 
 /**
  * Function to update user privilege.
- * Returns the rotated session and a function to set the new session cookie. 
- * 
+ * Returns the rotated session and a function to set the new session cookie.
+ *
  * @param {string[]} roles - Array of roles to assign to the user.
  */
-export async function updatePrivilege(
-  roles: string[],
-) {
+export async function updatePrivilege(roles: string[]) {
+  const authConfig = getAuthConfig();
+
   // Retrieves the current session
   const session = await getAuth();
 
@@ -21,7 +21,7 @@ export async function updatePrivilege(
   }
 
   // Check that the user roles are valid
-  const validRoles = authConfig.options.roles;
+  const validRoles = authConfig!.options.roles;
   if (validRoles) {
     for (const role of roles) {
       if (!validRoles.includes(role)) {

@@ -1,6 +1,6 @@
 import { generateSessionCookieObject } from "@/shared/utils/session";
 import { auth as getAuth } from "./auth";
-import { auth, authConfig } from "@/server/core/singleton";
+import { auth, getAuthConfig, getAuthInstance } from "@/server/core/singleton";
 import { DEFAULT_IDLE_TTL } from "@/shared/constants/config.constants";
 import { cookies } from "next/headers";
 import { SESSION_COOKIE_NAME } from "@/shared/constants/auth.constants";
@@ -9,6 +9,9 @@ import { SESSION_COOKIE_NAME } from "@/shared/constants/auth.constants";
  * Rotates the current user session, and returns a function to set the new session cookie.
  */
 export async function rotateSession() {
+  const authObject = await getAuthInstance();
+  const authConfig = getAuthConfig();
+
   // Get the current session
   const session = await getAuth();
 
@@ -18,7 +21,7 @@ export async function rotateSession() {
   }
 
   // Rotate the session
-  const rotatedSession = await auth.sessions.rotateSession(session.id);
+  const rotatedSession = await authObject.sessions.rotateSession(session.id);
 
   // Error occurred whilst rotating session
   if (!rotatedSession) {
@@ -29,7 +32,7 @@ export async function rotateSession() {
   const cookieConfig = generateSessionCookieObject(
     SESSION_COOKIE_NAME,
     rotatedSession.getSessionToken(),
-    authConfig.options.idleTTL || DEFAULT_IDLE_TTL,
+    authConfig!.options.idleTTL || DEFAULT_IDLE_TTL,
     true,
   );
 

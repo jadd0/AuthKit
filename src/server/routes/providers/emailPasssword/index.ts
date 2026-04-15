@@ -1,5 +1,5 @@
 import { AccountRateLimiter } from "@/server/classes/auth/accountRateLimiter";
-import { authConfig, serverAuth } from "@/server/core/singleton";
+import { getAuthConfig, getServerAuth } from "@/server/core/singleton";
 import { secureResponse } from "@/shared/utils/addSecurityHeaders";
 import { logger } from "@/server/classes/AuthKitLogger";
 import { NextRequest } from "next/server";
@@ -13,9 +13,12 @@ let rateLimitersInitialized = false;
  * Initialise rate limiters lazily (only once, when first request comes in)
  */
 function ensureRateLimitersInitialised() {
+  const authConfig = getAuthConfig();
+  const serverAuth = getServerAuth();
+
   if (rateLimitersInitialized) return;
 
-  const credentialsOptions = authConfig?.providers.find(
+  const credentialsOptions = authConfig!.providers.find(
     (p) => p.type === "credentials",
   );
 
@@ -46,11 +49,14 @@ export async function routeEmailPasswordProviderRequest(
   method: string,
   { body, url, request }: { body: any; url: string; request: NextRequest },
 ) {
+  const authConfig = getAuthConfig();
+  const serverAuth = getServerAuth();
+  
   // Initialise rate limiters on first request
   ensureRateLimitersInitialised();
 
   // Ensure the email-password provider is configured
-  if (!serverAuth.providers.emailPassword) {
+  if (!serverAuth?.providers.emailPassword) {
     throw new Error("Email/password provider not configured");
   }
 

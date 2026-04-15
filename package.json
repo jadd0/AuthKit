@@ -1,7 +1,7 @@
 {
   "name": "authkit",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
+  "private": false,
   "main": "dist/server/index.js",
   "types": "dist/server/index.d.ts",
   "module": "dist/server/index.js",

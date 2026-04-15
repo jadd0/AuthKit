@@ -1,4 +1,4 @@
-import { authConfig } from "@/server/core/singleton";
+import { getAuthConfig } from "@/server/core/singleton";
 import { auth as getAuth } from "./auth";
 import * as bcrypt from "bcrypt";
 import { DatabaseAccountInteractions } from "@/server/db/interfaces/databaseAccountInteractions";
@@ -6,6 +6,8 @@ import { rotateSession } from "./rotateSession";
 
 /** Updates a user's password. Returns the rotated session and a function to set the new session cookie. */
 export async function updatePassword(newPassword: string) {
+  const authConfig = getAuthConfig();
+
   // Get the current session
   const session = await getAuth();
 
@@ -17,7 +19,7 @@ export async function updatePassword(newPassword: string) {
   // Hash the new password
   const hashedPassword = await bcrypt.hash(
     newPassword,
-    authConfig.providers.find((p) => p.type === "credentials")!.saltingRounds!,
+    authConfig!.providers.find((p) => p.type === "credentials")!.saltingRounds!,
   );
 
   // Update the password in the database

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { routeEmailPasswordProviderRequest } from "./emailPasssword";
-import { serverAuth } from "@/server/core/singleton";
+import { getServerAuth } from "@/server/core/singleton";
 import { routeOIDCProviderRequest } from "./OIDCProvider";
 
 /** Used to handle the provider request route */
@@ -8,8 +8,10 @@ export async function routeProviderRequest(
   segments: string[],
   method: string,
   { body, url, request }: { body: any; url: string; request: NextRequest },
-  cookies: Record<string, string>
+  cookies: Record<string, string>,
 ): Promise<Response> {
+  const serverAuth = getServerAuth();
+
   const providerId = segments[1];
 
   // Provider: emailPassword
@@ -21,8 +23,10 @@ export async function routeProviderRequest(
     });
   }
 
+  console.log(serverAuth);
+
   // Provider: OIDC
-  const oidcProvider = serverAuth.providers.oidc?.[providerId];
+  const oidcProvider = serverAuth?.providers.oidc?.[providerId];
 
   // If no such OIDC provider
   if (!oidcProvider) {
@@ -34,6 +38,6 @@ export async function routeProviderRequest(
     method,
     { body, url, request },
     cookies,
-    oidcProvider
+    oidcProvider,
   );
 }
