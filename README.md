@@ -46,49 +46,49 @@ Create app/auth.ts. This file instantiates AuthKit once and exposes strongly typ
 
 ```ts
 // app/auth.ts
-import { AuthKit } from 'authkit';
-import type { AuthConfig, DatabaseConfig } from 'authkit';
+import { AuthKit } from "authkit";
+import type { AuthConfig, DatabaseConfig } from "authkit";
 
 // If using pool-based configuration, parse the port from the env var.
 const dbPort = process.env.DATABASE_PORT
-	? parseInt(process.env.DATABASE_PORT, 10)
-	: undefined;
+  ? parseInt(process.env.DATABASE_PORT, 10)
+  : undefined;
 
 // Pool-based configuration (used if DATABASE_URL is not set).
 const databaseConfig: DatabaseConfig = {
-	user: process.env.DATABASE_USER!,
-	host: process.env.DATABASE_HOST!,
-	password: process.env.DATABASE_PASSWORD!,
-	port: dbPort!,
-	name: process.env.DATABASE_NAME!,
+  user: process.env.DATABASE_USER!,
+  host: process.env.DATABASE_HOST!,
+  password: process.env.DATABASE_PASSWORD!,
+  port: dbPort!,
+  name: process.env.DATABASE_NAME!,
 };
 
 // Main AuthKit configuration.
 const config: AuthConfig = {
-	options: {
-		strategy: 'database', // current implementation uses database-backed sessions
-	},
-	db: process.env.DATABASE_URL ?? databaseConfig,
-	providers: [
-		{
-			type: 'credentials',
-			id: 'emailPassword',
-			// Additional provider options (e.g. rate limiting) configured here if required.
-		},
-		// Example OIDC provider:
-		// {
-		//   type: "oidc",
-		//   id: "google",
-		//   issuer: "https://accounts.google.com",
-		//   clientId: process.env.GOOGLE_CLIENT_ID!,
-		//   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-		//   redirectURI: "https://your-app.com/api/auth/provider/google/callback",
-		// },
-	],
-	callbacks: {
-		// Optional: override or extend behaviours here (e.g. profile mapping).
-		// authorise: async (ctx, credentials) => { ... },
-	},
+  options: {
+    strategy: "database", // current implementation uses database-backed sessions
+  },
+  db: process.env.DATABASE_URL ?? databaseConfig,
+  providers: [
+    {
+      type: "credentials",
+      id: "emailPassword",
+      // Additional provider options (e.g. rate limiting) configured here if required.
+    },
+    // Example OIDC provider:
+    // {
+    //   type: "oidc",
+    //   id: "google",
+    //   issuer: "https://accounts.google.com",
+    //   clientId: process.env.GOOGLE_CLIENT_ID!,
+    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    //   redirectURI: "https://your-app.com/api/auth/provider/google/callback",
+    // },
+  ],
+  callbacks: {
+    // Optional: override or extend behaviours here (e.g. profile mapping).
+    // authorise: async (ctx, credentials) => { ... },
+  },
 };
 
 // The factory returns App Router–ready primitives.
@@ -101,12 +101,12 @@ To make imports less verbose, add a path alias in your tsconfig.json:
 
 ```json
 {
-	"compilerOptions": {
-		// ...
-		"paths": {
-			"@/auth": ["app/auth"]
-		}
-	}
+  "compilerOptions": {
+    // ...
+    "paths": {
+      "@/auth": ["app/auth"]
+    }
+  }
 }
 ```
 
@@ -120,7 +120,7 @@ Create app/api/auth/[...authkit]/route.ts:
 
 ```ts
 // app/api/auth/[...authkit]/route.ts
-import { handlers } from '@/auth';
+import { handlers } from "@/auth";
 
 /**
  * Main GET endpoint for AuthKit (e.g., OAuth callbacks, session retrieval).
@@ -143,30 +143,30 @@ Create or update proxy.ts in the project root:
 
 ```ts
 // proxy.ts
-import { middleware as withAuthMiddleware } from '@/auth';
+import { middleware as withAuthMiddleware } from "@/auth";
 
 export const config = {
-	// Define the set of routes that should run through this middleware.
-	// Adjust this to match your application.
-	matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // Define the set of routes that should run through this middleware.
+  // Adjust this to match your application.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
 
 export default withAuthMiddleware({
-	// Routes that do NOT require authentication.
-	publicRoutes: ['/login', '/register'],
+  // Routes that do NOT require authentication.
+  publicRoutes: ["/login", "/register"],
 
-	// Route to redirect unauthenticated users to.
-	loginRoute: '/login',
+  // Route to redirect unauthenticated users to.
+  loginRoute: "/login",
 
-	// Optional role-based rules.
-	// Example: restrict /admin to users with the "admin" role.
-	roleRules: [
-		{
-			pattern: /^\/admin/,
-			requiredRoles: ['admin'],
-			mode: 'all', // "any" or "all"
-		},
-	],
+  // Optional role-based rules.
+  // Example: restrict /admin to users with the "admin" role.
+  roleRules: [
+    {
+      pattern: /^\/admin/,
+      requiredRoles: ["admin"],
+      mode: "all", // "any" or "all"
+    },
+  ],
 });
 ```
 
@@ -260,26 +260,28 @@ foreach ($file in $files) {
 ```
 
 #### Important notes for manual migration:
-* Run all migration files in order. Do not skip earlier migrations or run only the highest-numbered file.
 
-* If you see errors such as relation ... already exists, they usually indicate that the migration step has already been applied and can be safely ignored.
+- Run all migration files in order. Do not skip earlier migrations or run only the highest-numbered file.
 
-* If you see schema mismatch errors from AuthKit at runtime, re-run the migration loop to ensure your schema matches the version shipped with the library.
+- If you see errors such as relation ... already exists, they usually indicate that the migration step has already been applied and can be safely ignored.
 
-* Always back up your database before applying migrations.
+- If you see schema mismatch errors from AuthKit at runtime, re-run the migration loop to ensure your schema matches the version shipped with the library.
+
+- Always back up your database before applying migrations.
 
 ## 7) Summary:
+
 At minimum, to get AuthKit running you must:
 
-1) Provide PostgreSQL connection details via .env.
+1. Provide PostgreSQL connection details via .env.
 
-2) Create app/auth.ts and instantiate AuthKit(config).
+2. Create app/auth.ts and instantiate AuthKit(config).
 
-3) Wire up app/api/auth/[...authkit]/route.ts with handlers.GET and handlers.POST.
+3. Wire up app/api/auth/[...authkit]/route.ts with handlers.GET and handlers.POST.
 
-4) Configure middleware.ts with withAuthMiddleware if you want middleware-based route protection.
+4. Configure middleware.ts with withAuthMiddleware if you want middleware-based route protection.
 
-5) Apply the shipped database migrations via Drizzle or manual SQL.
+5. Apply the shipped database migrations via Drizzle or manual SQL.
 
 From there, you can add OIDC providers, customise callbacks, and extend role‑based access control as your application requires.
 
@@ -407,14 +409,17 @@ Example privilege update route (adjust imports to match your export surface):
 import { auth, updatePrivalege } from "authkit/server";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } },
+) {
   const session = await auth();
 
   if (!session || !session.user || !session.user.roles.includes("admin")) {
     return new NextResponse("Forbidden", { status: 403 });
   }
 
-  const body = await request.json() as { roles: string[] };
+  const body = (await request.json()) as { roles: string[] };
   await updatePrivalege({ userId: params.id, roles: body.roles });
 
   return new NextResponse(null, { status: 204 });
@@ -461,7 +466,7 @@ You can enforce RBAC at the URL level using roleRules.
 Example:
 
 ```ts
-import { middleware as withAuthMiddleware } from "authkit/middleware";
+import { withAuthMiddleware } from "authkit/middleware";
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
