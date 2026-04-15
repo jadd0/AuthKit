@@ -23,8 +23,6 @@ export async function routeProviderRequest(
     });
   }
 
-  console.log(serverAuth);
-
   // Provider: OIDC
   const oidcProvider = serverAuth?.providers.oidc?.[providerId];
 

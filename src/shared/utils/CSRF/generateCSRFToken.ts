@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { authConfig } from "@/server/core/singleton";
+import { getAuthConfig } from "@/server/core/singleton";
 
 export interface CSRFTokenPayload {
   sessionToken: string;
@@ -13,7 +13,8 @@ export function generateCsrfToken(
   sessionToken: string,
   action?: string,
 ): string {
-  const secret = authConfig.options.CSRFSecret;
+  const authConfig = getAuthConfig();
+  const secret = authConfig?.options.CSRFSecret;
 
   // No given secret to sign the CSRF token with
   if (!secret) {

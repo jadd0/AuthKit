@@ -5,7 +5,7 @@ import {
 } from "@/shared/constants";
 import { NextRequest } from "next/server";
 import { CSRFTokenPayload, generateCsrfToken } from "./generateCSRFToken";
-import { authConfig } from "@/server/core/singleton";
+import { getAuthConfig } from "@/server/core/singleton";
 import crypto from "crypto";
 import { CSRF_TOKEN_MAX_AGE } from "@/shared/constants";
 
@@ -14,6 +14,7 @@ export function verifyCsrf(request: NextRequest, action?: string): boolean {
   const sessionToken = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   const cookieToken = request.cookies.get(CSRF_COOKIE_NAME)?.value;
   const headerToken = request.headers.get(CSRF_HEADER_NAME);
+  const authConfig = getAuthConfig();
 
   // If any of the tokens are missing, fail immediately
   if (!sessionToken || !cookieToken || !headerToken) {
@@ -37,7 +38,7 @@ export function verifyCsrf(request: NextRequest, action?: string): boolean {
 
   // Verify token signature
   const expectedSignature = crypto
-    .createHmac("sha256", authConfig.options.CSRFSecret)
+    .createHmac("sha256", authConfig!.options.CSRFSecret)
     .update(payloadStr)
     .digest("hex");
 

@@ -208,7 +208,7 @@ export class Sessions {
     if (
       !(await DatabaseSessionInteractions.deleteSessionBySessionId(sessionId))
     ) {
-      throw new Error(
+      logger.error(
         "An error occurred whilst attempting to delete the session with ID: " +
           sessionId +
           " from the database.",
@@ -294,7 +294,7 @@ export class Sessions {
         await DatabaseSessionInteractions.deleteSessionBySessionId(id);
 
       if (!deleteResult) {
-        throw new Error(
+        logger.error(
           "An error occurred whilst attempting to delete the session with id: " +
             id +
             " from the database.",

@@ -1,4 +1,4 @@
-import { db } from "@/server/core/singleton";
+import { getDb } from "@/server/core/singleton";
 import {
   users,
   NewUser,
@@ -11,6 +11,9 @@ import { eq } from "drizzle-orm";
 
 /** Helper function to test transaction insertion. Runs a function in a transaction and always rolls back, so no data is persisted */
 async function testInTransaction(fn: () => Promise<void>) {
+  const db = getDb();
+  if (!db) throw new Error("Database not initialized");
+
   await db.transaction(async (trx: any) => {
     try {
       await fn();
@@ -27,6 +30,9 @@ async function testInTransaction(fn: () => Promise<void>) {
 
 /** Tester function used on runtime start to ensure the given database matches the necessary schema */
 export async function dbSchemaValidation(): Promise<boolean> {
+  const db = getDb();
+  if (!db) throw new Error("Database not initialized");
+
   try {
     // To avoid FK issues, insert user first and reuse "fake-user-id"
     await testInTransaction(async () => {
@@ -51,7 +57,7 @@ export async function dbSchemaValidation(): Promise<boolean> {
         sessionToken: "test-session-token",
         userId: "fake-user-id",
         createdAt: new Date(),
-        lastActivityAt: new Date()
+        lastActivityAt: new Date(),
       } satisfies NewSession);
       // Force rollback
       throw new Error("Rollback transaction after schema test.");
@@ -66,7 +72,7 @@ export async function dbSchemaValidation(): Promise<boolean> {
   } catch (e: any) {
     throw new Error(
       "Database schema validation failed. Ensure all migrations are complete. Check the README.md for migration instructions.\n\nDetails: " +
-        e
+        e,
     );
   }
 }

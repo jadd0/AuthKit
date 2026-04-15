@@ -1,4 +1,4 @@
-import { db } from "@/server/core/singleton";
+import { getDb } from "@/server/core/singleton";
 import { Account, accounts, NewAccount } from "@/shared/schemas";
 import { Providers } from "@/shared/types";
 import { and, eq } from "drizzle-orm";
@@ -9,6 +9,9 @@ export const DatabaseAccountInteractions = {
 
   /** Used to create an account connection (eg: a provider) */
   async createAccount(config: NewAccount): Promise<Account[]> {
+    const db = getDb();
+    if (!db) throw new Error("Database not initialized");
+
     return db.insert(accounts).values(config).returning();
   },
 
@@ -18,14 +21,20 @@ export const DatabaseAccountInteractions = {
 
   /** Used to retrive user account connections via the user's ID */
   async getAccountsByUserId(id: string): Promise<Account[] | null> {
+    const db = getDb();
+    if (!db) throw new Error("Database not initialized");
+
     return await db.select().from(accounts).where(eq(accounts.userId, id));
   },
 
   /** Used to retrieve a unique account connection via composite key (userId + provider) */
   async getAccountByCompositeKey(
     userId: string,
-    provider: string
+    provider: string,
   ): Promise<Account | null> {
+    const db = getDb();
+    if (!db) throw new Error("Database not initialized");
+
     const result = await db
       .select()
       .from(accounts)
@@ -36,8 +45,11 @@ export const DatabaseAccountInteractions = {
 
   /** Used to retrieve a unique account connection via provider account ID */
   async getAccountByProviderAccountId(
-    accountId: string
+    accountId: string,
   ): Promise<Account | null> {
+    const db = getDb();
+    if (!db) throw new Error("Database not initialized");
+
     const result = await db
       .select()
       .from(accounts)
@@ -56,8 +68,11 @@ export const DatabaseAccountInteractions = {
     refreshToken: string,
     expiresAt: number,
     userId: string,
-    provider: string
+    provider: string,
   ): Promise<Account | null> {
+    const db = getDb();
+    if (!db) throw new Error("Database not initialized");
+
     const result = await db
       .update(accounts)
       .set({
@@ -74,8 +89,11 @@ export const DatabaseAccountInteractions = {
   /** Used to update a user's password (if via email/password provider) via the composite key (userId + provider) */
   async updateAccountPassword(
     password: string,
-    userId: string
+    userId: string,
   ): Promise<Account | null> {
+    const db = getDb();
+    if (!db) throw new Error("Database not initialized");
+
     const result = await db
       .update(accounts)
       .set({ password })
@@ -85,7 +103,6 @@ export const DatabaseAccountInteractions = {
     return result[0] || null;
   },
 
-
   // END: UPDATE
 
   // START: DELETE
@@ -93,8 +110,11 @@ export const DatabaseAccountInteractions = {
   /** Used to delete an account provider via the composite key (userId + provider) */
   async deleteAccount(
     userId: string,
-    provider: Providers
+    provider: Providers,
   ): Promise<Error | Account | null> {
+    const db = getDb();
+    if (!db) throw new Error("Database not initialized");
+
     // Check if only account connection for user
     const connections = await this.getAccountsByUserId(userId);
 

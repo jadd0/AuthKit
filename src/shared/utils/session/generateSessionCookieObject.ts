@@ -1,4 +1,4 @@
-import { authConfig } from "@/server/core/singleton";
+import { getAuthConfig } from "@/server/core/singleton";
 
 /** Generates a session cookie object */
 export function generateSessionCookieObject(
@@ -7,6 +7,8 @@ export function generateSessionCookieObject(
   maxAgeSeconds: number,
   secure = true
 ) {
+  const authConfig = getAuthConfig();
+
   return {
     name,
     value,
@@ -14,6 +16,6 @@ export function generateSessionCookieObject(
     secure,
     maxAge: maxAgeSeconds,
     path: "/",
-    sameSite: authConfig.options.sameSite || "strict",
+    sameSite: authConfig?.options.sameSite || "strict",
   };
 }

@@ -1,4 +1,4 @@
-import { authConfig } from "@/server/core/singleton";
+import { getAuthConfig } from "@/server/core/singleton";
 
 /**
  * Generates cookie options for a secure, HttpOnly session cookie
@@ -9,7 +9,9 @@ export function generateSessionCookie(
   maxAgeSeconds: number,
   secure = true
 ) {
+  const authConfig = getAuthConfig();
+
   return `${name}=${value}; HttpOnly; Path=/; Max-Age=${maxAgeSeconds}; SameSite=${
-    authConfig.options.sameSite || "Strict"
+    authConfig?.options.sameSite || "Strict"
   }; ${secure ? "Secure;" : ""}`;
 }
