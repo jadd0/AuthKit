@@ -14,7 +14,7 @@ export class ServerSession {
     }
 
     // Attempt to retrieve the session by its token
-    const session = auth.sessions.getSessionByToken(token);
+    const session = await auth.sessions.getSessionByToken(token);
 
     // Session not found
     if (!session) {
@@ -46,7 +46,7 @@ export class ServerSession {
     }
 
     // Attempt to retrieve the session by its token
-    const session = auth.sessions.getSessionByToken(token);
+    const session = await auth.sessions.getSessionByToken(token);
 
     // Session not found
     if (!session) {

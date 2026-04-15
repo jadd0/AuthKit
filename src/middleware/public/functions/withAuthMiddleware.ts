@@ -66,7 +66,7 @@ export function withAuthMiddleware(config: MiddlewareConfig = {}) {
       const auth = await getAuthInstance();
 
       if (auth?.sessions) {
-        const session = auth.sessions.getSessionByToken(sessionToken);
+        const session = await auth.sessions.getSessionByToken(sessionToken);
 
         if (!session) {
           return redirectToLogin(req, loginRoute, pathname);

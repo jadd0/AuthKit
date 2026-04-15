@@ -73,7 +73,10 @@ export class Sessions {
   // START: READ
 
   /** Retrieve a session by its ID */
-  getSession(sessionId: string, updateActivity = true): Session | null {
+  async getSession(
+    sessionId: string,
+    updateActivity = true,
+  ): Promise<Session | null> {
     const session = this.sessionsById.get(sessionId);
 
     if (!session) {
@@ -81,20 +84,20 @@ export class Sessions {
     }
 
     // Check if session is still valid
-    if (!this.checkSessionValidity(session)) {
+    if (!(await this.checkSessionValidity(session))) {
       return null;
     }
 
     // Update activity is true if true
     if (updateActivity) {
-      this.maybeUpdateActivity(session);
+      await this.maybeUpdateActivity(session);
     }
 
     return session;
   }
 
   /** Retrieve a session by its token, O(1) lookup */
-  getSessionByToken(token: string): Session | null {
+  async getSessionByToken(token: string): Promise<Session | null> {
     const session = this.sessionsByToken.get(token);
 
     if (!session) {
@@ -103,7 +106,7 @@ export class Sessions {
 
     // Check if session is still valid
 
-    if (!this.checkSessionValidity(session)) {
+    if (!(await this.checkSessionValidity(session))) {
       return null;
     }
 
@@ -346,7 +349,7 @@ export class Sessions {
   /**
    * Update activity time only if threshold has passed (avoids DB write spam)
    */
-  private maybeUpdateActivity(session: Session) {
+  private async maybeUpdateActivity(session: Session) {
     const now = Date.now();
     const lastActivity = session.getLastActivityTime().getTime();
     const ACTIVITY_UPDATE_THRESHOLD = 60 * 1000; // 60 seconds

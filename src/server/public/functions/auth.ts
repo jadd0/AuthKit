@@ -15,7 +15,7 @@ export async function auth(): Promise<SessionWithUser | null> {
   if (!token) return null;
 
   try {
-    const session = authObject.sessions.getSessionByToken(token);
+    const session = await authObject.sessions.getSessionByToken(token);
 
     // No session found
     if (!session) {

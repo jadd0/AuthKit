@@ -1,5 +1,3 @@
-// src/shared/utils/security/redirectValidator.ts
-
 import { logger } from "@/server/classes/AuthKitLogger";
 
 /**
