@@ -1,7 +1,10 @@
 {
-  "name": "authkit",
+  "name": "@jadd0/authkit",
   "version": "1.0.0",
   "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "dist/server/index.js",
   "types": "dist/server/index.d.ts",
   "module": "dist/server/index.js",

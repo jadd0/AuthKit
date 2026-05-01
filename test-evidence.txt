@@ -1,0 +1,216 @@
+Commit: c1144bf
+
+
+> authkit-tests@1.0.0 test:unit
+> vitest run src/unit --reporter=verbose
+
+
+ RUN  v1.6.1 /Users/jaddal-khabbaz/Desktop/Programming/Web/AuthKit/authkit-tests
+
+ ✓ src/unit/middleware-helpers.test.ts > isPublicRoute > returns true for '/' root exact match
+ ✓ src/unit/middleware-helpers.test.ts > isPublicRoute > returns true for '/login' exact match
+ ✓ src/unit/middleware-helpers.test.ts > isPublicRoute > returns true for '/public/anything' (wildcard match)
+ ✓ src/unit/middleware-helpers.test.ts > isPublicRoute > returns true for deeply nested wildcard path
+ ✓ src/unit/middleware-helpers.test.ts > isPublicRoute > returns false for '/dashboard' (protected route)
+ ✓ src/unit/middleware-helpers.test.ts > isPublicRoute > returns false for '/admin' (protected route)
+ ✓ src/unit/middleware-helpers.test.ts > isPublicRoute > returns false for '/loginXSS' (shares prefix but not a wildcard)
+ ✓ src/unit/middleware-helpers.test.ts > isPublicRoute > returns false when publicRoutes is empty
+ ✓ src/unit/middleware-helpers.test.ts > isPublicRoute > returns false for '/api/health/extra' (exact match only)
+ ✓ src/unit/middleware-helpers.test.ts > checkRoleAccess – mode 'any' > returns true when user has at least one required role
+ ✓ src/unit/middleware-helpers.test.ts > checkRoleAccess – mode 'any' > returns false when user has none of the required roles
+ ✓ src/unit/middleware-helpers.test.ts > checkRoleAccess – mode 'any' > returns true when requiredRoles is empty (open access)
+ ✓ src/unit/middleware-helpers.test.ts > checkRoleAccess – mode 'any' > returns false when user has no roles at all
+ ✓ src/unit/middleware-helpers.test.ts > checkRoleAccess – mode 'any' > is case-sensitive (user ≠ User)
+ ✓ src/unit/middleware-helpers.test.ts > checkRoleAccess – mode 'all' > returns true when user has every required role
+ ✓ src/unit/middleware-helpers.test.ts > checkRoleAccess – mode 'all' > returns false when user is missing one required role
+ ✓ src/unit/middleware-helpers.test.ts > checkRoleAccess – mode 'all' > returns true when user has extra roles beyond required
+ ✓ src/unit/middleware-helpers.test.ts > redirectToLogin > starts with /login by default
+ ✓ src/unit/middleware-helpers.test.ts > redirectToLogin > preserves the original pathname in redirectTo
+ ✓ src/unit/middleware-helpers.test.ts > redirectToLogin > preserves nested protected paths
+ ✓ src/unit/middleware-helpers.test.ts > redirectToLogin > uses a custom loginRoute when supplied
+ ✓ src/unit/middleware-helpers.test.ts > redirectToLogin > encodes special characters (no raw spaces in output)
+ ✓ src/unit/csrf.test.ts > generateCsrfToken > produces a dot-separated base64.hex string
+ ✓ src/unit/csrf.test.ts > generateCsrfToken > embeds the sessionToken in the payload
+ ✓ src/unit/csrf.test.ts > generateCsrfToken > embeds a timestamp within the current window
+ ✓ src/unit/csrf.test.ts > generateCsrfToken > embeds a 32-char hex nonce
+ ✓ src/unit/csrf.test.ts > generateCsrfToken > nonces differ on successive calls (no replay)
+ ✓ src/unit/csrf.test.ts > generateCsrfToken > embeds SHA-256 actionHash when action is provided
+ ✓ src/unit/csrf.test.ts > generateCsrfToken > omits actionHash when no action is provided
+ ✓ src/unit/csrf.test.ts > verifyCsrf – happy path > returns true for a well-formed current token
+ ✓ src/unit/csrf.test.ts > verifyCsrf – happy path > accepts an action-bound token with the correct action
+ ✓ src/unit/csrf.test.ts > verifyCsrf – rejection cases > throws 'Missing tokens' when session cookie absent (login without session)
+ ✓ src/unit/csrf.test.ts > verifyCsrf – rejection cases > throws 'Missing tokens' when CSRF header absent (R1 – login omits CSRF header)
+ ✓ src/unit/csrf.test.ts > verifyCsrf – rejection cases > throws 'Token mismatch' when cookie and header differ (R1 – logout CSRF cookie/header disagree)
+ ✓ src/unit/csrf.test.ts > verifyCsrf – rejection cases > throws 'Invalid token signature' when HMAC is tampered
+ ✓ src/unit/csrf.test.ts > verifyCsrf – rejection cases > throws 'Session token mismatch' when embedded session differs from cookie
+ ✓ src/unit/csrf.test.ts > verifyCsrf – rejection cases > throws 'Token expired' for a token older than CSRF_TOKEN_MAX_AGE (15 min)
+ ✓ src/unit/csrf.test.ts > verifyCsrf – rejection cases > throws 'Action mismatch' when action-bound token verified with wrong action
+ ✓ src/unit/session-ttl.test.ts > Session idle TTL > getSessionIdleExpiry() = lastActivityAt + idleTTL
+ ✓ src/unit/session-ttl.test.ts > Session idle TTL > returns null when no idleTTL configured
+ ✓ src/unit/session-ttl.test.ts > Session idle TTL > isIdleExpired() false for recently active session
+ ✓ src/unit/session-ttl.test.ts > Session idle TTL > isIdleExpired() true when idle TTL elapsed
+ ✓ src/unit/session-ttl.test.ts > Session absolute TTL > getSessionAbsoluteExpiry() = createdAt + absoluteTTL
+ ✓ src/unit/session-ttl.test.ts > Session absolute TTL > isAbsoluteExpired() false for recent session
+ ✓ src/unit/session-ttl.test.ts > Session absolute TTL > isAbsoluteExpired() true when absolute TTL elapsed
+ ✓ src/unit/session-ttl.test.ts > Session combined validity > isValid() true when neither TTL elapsed
+ ✓ src/unit/session-ttl.test.ts > Session combined validity > isValid() false when idle TTL elapsed
+ ✓ src/unit/session-ttl.test.ts > Session combined validity > isValid() false when absolute TTL elapsed
+ ✓ src/unit/session-ttl.test.ts > Session combined validity > isValid() false when both TTLs elapsed
+ ✓ src/unit/session-ttl.test.ts > Session combined validity > isValid() true when no TTLs configured (no expiry)
+ ✓ src/unit/session-ttl.test.ts > Session token rotation > assigns a new unique token on rotation
+ ✓ src/unit/session-ttl.test.ts > Session token rotation > new token is 64-char hex (256 bits of entropy)
+ ✓ src/unit/session-ttl.test.ts > Session token rotation > 100 successive rotations produce 100 unique tokens
+ ✓ src/unit/session-ttl.test.ts > Session token rotation > stolen token after rotation is rejected (old token no longer matches)
+ ✓ src/unit/pkce.test.ts > generateCodeVerifier > returns a string of the requested length (default 64)
+ ✓ src/unit/pkce.test.ts > generateCodeVerifier > returns a 43-char verifier when explicitly requested (RFC minimum)
+ ✓ src/unit/pkce.test.ts > generateCodeVerifier > returns a 128-char verifier when explicitly requested (RFC maximum)
+ ✓ src/unit/pkce.test.ts > generateCodeVerifier > contains only unreserved characters (RFC 7636 §4.1)
+ ✓ src/unit/pkce.test.ts > generateCodeVerifier > produces unique verifiers on successive calls
+ ✓ src/unit/pkce.test.ts > generateCodeVerifier > 50 consecutive verifiers are all unique (entropy check)
+ ✓ src/unit/pkce.test.ts > generateCodeChallenge – S256 transformation > produces a 43-char base64url string
+ ✓ src/unit/pkce.test.ts > generateCodeChallenge – S256 transformation > uses no padding characters ('=')
+ ✓ src/unit/pkce.test.ts > generateCodeChallenge – S256 transformation > uses base64url characters only (no '+' or '/')
+ ✓ src/unit/pkce.test.ts > generateCodeChallenge – S256 transformation > is deterministic for the same verifier input
+ ✓ src/unit/pkce.test.ts > generateCodeChallenge – S256 transformation > differs for different verifiers
+ ✓ src/unit/pkce.test.ts > generateCodeChallenge – S256 transformation > matches the RFC 7636 Appendix B test vector
+ ✓ src/unit/pkce.test.ts > verifyCodeChallenge > returns true for a matching verifier/challenge pair
+ ✓ src/unit/pkce.test.ts > verifyCodeChallenge > returns false for a missing code_verifier (empty string)
+ ✓ src/unit/pkce.test.ts > verifyCodeChallenge > returns false for a mismatched verifier
+ ✓ src/unit/pkce.test.ts > verifyCodeChallenge > returns false for a tampered challenge (single char flip)
+ ✓ src/unit/pkce.test.ts > verifyCodeChallenge > returns false if attacker passes verifier as challenge (plain method bypass)
+ ✓ src/unit/pkce.test.ts > verifyCodeChallenge > returns false for a standard-base64 (padded) challenge
+ ✓ src/unit/config-validation.test.ts > authConfigSchema – valid > accepts a complete production config
+ ✓ src/unit/config-validation.test.ts > authConfigSchema – valid > accepts http:// callbackUrl in development
+ ✓ src/unit/config-validation.test.ts > authConfigSchema – missing CSRF_SECRET > rejects when absent
+ ✓ src/unit/config-validation.test.ts > authConfigSchema – missing CSRF_SECRET > rejects when shorter than 32 chars
+ ✓ src/unit/config-validation.test.ts > authConfigSchema – http:// in production > rejects http:// callbackUrl in production
+ ✓ src/unit/config-validation.test.ts > authConfigSchema – no providers > rejects empty providers array
+ ✓ src/unit/config-validation.test.ts > authConfigSchema – malformed OIDC issuer > rejects non-URL issuer
+ ✓ src/unit/config-validation.test.ts > authConfigSchema – malformed OIDC issuer > rejects OIDC provider with no issuer
+ ✓ src/unit/config-validation.test.ts > authConfigSchema – malformed OIDC issuer > rejects unknown SameSite value
+ ✓ src/unit/config-validation.test.ts > dbSchemaValidation – correct schema > returns valid=true with no errors
+ ✓ src/unit/config-validation.test.ts > dbSchemaValidation – missing column > reports missing 'email' column
+ ✓ src/unit/config-validation.test.ts > dbSchemaValidation – altered foreign key > reports missing FK when sessions.user_id → users.id removed
+ ✓ src/unit/config-validation.test.ts > dbSchemaValidation – missing table > reports missing accounts table
+ ✓ src/unit/hmac-state.test.ts > signState > produces a dot-separated base64.hex string
+ ✓ src/unit/hmac-state.test.ts > signState > encodes all payload fields in the base64 segment
+ ✓ src/unit/hmac-state.test.ts > signState > is deterministic for the same payload
+ ✓ src/unit/hmac-state.test.ts > signState > different nonces produce different tokens
+ ✓ src/unit/hmac-state.test.ts > verifyState – happy path > round-trips without throwing
+ ✓ src/unit/hmac-state.test.ts > verifyState – happy path > returns the original payload fields intact
+ ✓ src/unit/hmac-state.test.ts > verifyState – tampering rejection > throws on an unsigned (raw JSON base64) state value
+ ✓ src/unit/hmac-state.test.ts > verifyState – tampering rejection > throws when signature replaced with all-zeros
+ ✓ src/unit/hmac-state.test.ts > verifyState – tampering rejection > throws when signature replaced with random hex
+ ✓ src/unit/hmac-state.test.ts > verifyState – tampering rejection > throws when redirectTo is mutated (attacker changes post-login destination)
+ ✓ src/unit/hmac-state.test.ts > verifyState – tampering rejection > throws when provider is mutated
+ ✓ src/unit/hmac-state.test.ts > verifyState – tampering rejection > throws on empty string
+ ✓ src/unit/hmac-state.test.ts > verifyState – tampering rejection > throws on token with no dot separator (valid-looking unsigned payload)
+ ✓ src/unit/redirect-validator.test.ts > validateRedirectUri — exact match (valid) > accepts a URI that exactly matches first allow-list entry
+ ✓ src/unit/redirect-validator.test.ts > validateRedirectUri — exact match (valid) > accepts a URI that exactly matches second allow-list entry
+ ✓ src/unit/redirect-validator.test.ts > validateRedirectUri — exact match (valid) > accepts http://localhost in production (localhost exemption)
+ ✓ src/unit/redirect-validator.test.ts > validateRedirectUri — protocol mismatch (rejected) > rejects http:// when allow-list contains https://
+ ✓ src/unit/redirect-validator.test.ts > validateRedirectUri — protocol mismatch (rejected) > rejects http:// non-localhost in production
+ ✓ src/unit/redirect-validator.test.ts > validateRedirectUri — protocol mismatch (rejected) > accepts http:// in development
+ ✓ src/unit/redirect-validator.test.ts > validateRedirectUri — hostname mismatch (rejected) > rejects different hostname (open-redirect)
+ ✓ src/unit/redirect-validator.test.ts > validateRedirectUri — hostname mismatch (rejected) > rejects subdomain not in allow-list
+ ✓ src/unit/redirect-validator.test.ts > validateRedirectUri — port mismatch (rejected) > rejects unexpected port
+ ✓ src/unit/redirect-validator.test.ts > validateRedirectUri — path mismatch (rejected) > rejects different path
+ ✓ src/unit/redirect-validator.test.ts > validateRedirectUri — path mismatch (rejected) > rejects trailing slash not in allow-list
+ ✓ src/unit/redirect-validator.test.ts > validateRedirectUri — edge inputs > rejects empty string
+ ✓ src/unit/redirect-validator.test.ts > validateRedirectUri — edge inputs > rejects malformed URI
+ ✓ src/unit/redirect-validator.test.ts > validateRedirectUri — edge inputs > returns a descriptive reason on every rejection
+ ✓ src/unit/session-cookie.test.ts > generateSessionCookie – production (secure=true) > includes the correct name=value pair
+ ✓ src/unit/session-cookie.test.ts > generateSessionCookie – production (secure=true) > sets HttpOnly
+ ✓ src/unit/session-cookie.test.ts > generateSessionCookie – production (secure=true) > sets Secure flag
+ ✓ src/unit/session-cookie.test.ts > generateSessionCookie – production (secure=true) > sets Path=/
+ ✓ src/unit/session-cookie.test.ts > generateSessionCookie – production (secure=true) > sets Max-Age to the supplied value
+ ✓ src/unit/session-cookie.test.ts > generateSessionCookie – production (secure=true) > defaults SameSite to Strict
+ ✓ src/unit/session-cookie.test.ts > generateSessionCookie – development (secure=false) > omits the Secure flag
+ ✓ src/unit/session-cookie.test.ts > generateSessionCookie – development (secure=false) > still sets HttpOnly
+ ✓ src/unit/session-cookie.test.ts > generateSessionCookie – SameSite overrides > respects SameSite=Lax
+ ✓ src/unit/session-cookie.test.ts > generateSessionCookie – SameSite overrides > respects SameSite=None
+ ✓ src/unit/session-cookie.test.ts > generateSessionCookie – OIDC state and verifier cookies > authkit-state uses SameSite=Lax (cross-site redirect compatibility)
+ ✓ src/unit/session-cookie.test.ts > generateSessionCookie – OIDC state and verifier cookies > authkit-verifier is HttpOnly and SameSite=Lax
+ ✓ src/unit/session-cookie.test.ts > generateSessionCookie – OIDC state and verifier cookies > authkit-csrf-token cookie name is correct
+ ✓ src/unit/session-cookie.test.ts > generateSessionCookie – attribute count > production cookie has exactly 6 attributes
+ ✓ src/unit/session-cookie.test.ts > generateSessionCookie – attribute count > development cookie has exactly 5 attributes (no Secure)
+
+ Test Files  8 passed (8)
+      Tests  127 passed (127)
+   Start at  13:09:38
+   Duration  468ms (transform 175ms, setup 1ms, collect 395ms, tests 62ms, environment 1ms, prepare 710ms)
+
+
+
+> authkit-tests@1.0.0 test:negative
+> vitest run src/negative --reporter=verbose
+
+
+ RUN  v1.6.1 /Users/jaddal-khabbaz/Desktop/Programming/Web/AuthKit/authkit-tests
+
+ ✓ src/negative/security-rejections.test.ts > Redirect URI — attack vectors > rejects open redirect with different hostname
+ ✓ src/negative/security-rejections.test.ts > Redirect URI — attack vectors > rejects protocol downgrade to http in production
+ ✓ src/negative/security-rejections.test.ts > Redirect URI — attack vectors > rejects port tampering
+ ✓ src/negative/security-rejections.test.ts > Redirect URI — attack vectors > rejects query-string injection
+ ✓ src/negative/security-rejections.test.ts > Redirect URI — attack vectors > rejects fragment injection
+ ✓ src/negative/security-rejections.test.ts > Redirect URI — attack vectors > rejects unapproved subdomain
+ ✓ src/negative/security-rejections.test.ts > PKCE — code_verifier attacks > rejects missing verifier
+ ✓ src/negative/security-rejections.test.ts > PKCE — code_verifier attacks > rejects mismatched verifier replayed from another session
+ ✓ src/negative/security-rejections.test.ts > PKCE — code_verifier attacks > rejects truncated verifier
+ ✓ src/negative/security-rejections.test.ts > OIDC state — tampering attacks > rejects fabricated signature
+ ✓ src/negative/security-rejections.test.ts > OIDC state — tampering attacks > rejects modified payload with reused signature
+ ✓ src/negative/security-rejections.test.ts > OIDC state — tampering attacks > rejects state signed with the wrong secret
+ ✓ src/negative/security-rejections.test.ts > OIDC state — tampering attacks > rejects empty state string
+ ✓ src/negative/security-rejections.test.ts > OIDC state — tampering attacks > rejects state string without a dot separator
+ ✓ src/negative/security-rejections.test.ts > CSRF — rejection paths > rejects login request without CSRF header
+ ✓ src/negative/security-rejections.test.ts > CSRF — rejection paths > rejects logout request with mismatched CSRF cookie and header
+ ✓ src/negative/security-rejections.test.ts > CSRF — rejection paths > rejects expired CSRF token
+ ✓ src/negative/security-rejections.test.ts > Token-in-log scanner > flags a line containing sessionToken
+ ✓ src/negative/security-rejections.test.ts > Token-in-log scanner > flags a line containing a 64-character hex token
+ ✓ src/negative/security-rejections.test.ts > Token-in-log scanner > flags a line containing a Bearer token
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  13:09:39
+   Duration  189ms (transform 22ms, setup 0ms, collect 23ms, tests 4ms, environment 0ms, prepare 42ms)
+
+
+
+> authkit-tests@1.0.0 test:config
+> vitest run src/config --reporter=verbose
+
+
+ RUN  v1.6.1 /Users/jaddal-khabbaz/Desktop/Programming/Web/AuthKit/authkit-tests
+
+ ✓ src/config/db-schema-validation.test.ts > dbSchemaValidation — correct schema > passes when schema matches exactly
+ ✓ src/config/db-schema-validation.test.ts > dbSchemaValidation — correct schema > passes when actual has extra columns (additive migrations safe)
+ ✓ src/config/db-schema-validation.test.ts > dbSchemaValidation — missing columns > throws when roles missing from users
+ ✓ src/config/db-schema-validation.test.ts > dbSchemaValidation — missing columns > throws when sessionToken missing from sessions
+ ✓ src/config/db-schema-validation.test.ts > dbSchemaValidation — missing columns > throws when lastActivityAt missing from sessions
+ ✓ src/config/db-schema-validation.test.ts > dbSchemaValidation — missing columns > throws when provider missing from accounts
+ ✓ src/config/db-schema-validation.test.ts > dbSchemaValidation — broken foreign keys > throws when userId FK missing from sessions
+ ✓ src/config/db-schema-validation.test.ts > dbSchemaValidation — broken foreign keys > throws when userId FK references wrong table
+ ✓ src/config/db-schema-validation.test.ts > dbSchemaValidation — broken foreign keys > throws when userId FK missing from accounts
+ ✓ src/config/db-schema-validation.test.ts > dbSchemaValidation — missing tables > throws when users table missing
+ ✓ src/config/db-schema-validation.test.ts > dbSchemaValidation — missing tables > throws when sessions table missing
+ ✓ src/config/db-schema-validation.test.ts > Fail-closed: AuthKit refuses to start on bad schema > throws at boot when schema broken
+ ✓ src/config/db-schema-validation.test.ts > Fail-closed: AuthKit refuses to start on bad schema > boots successfully when schema correct
+ ✓ src/config/config-validation.test.ts > Valid configuration > accepts a fully valid config
+ ✓ src/config/config-validation.test.ts > Valid configuration > accepts a config with OIDC provider
+ ✓ src/config/config-validation.test.ts > Missing CSRFSecret > fails when CSRFSecret absent
+ ✓ src/config/config-validation.test.ts > Missing CSRFSecret > fails when CSRFSecret shorter than 32 chars
+ ✓ src/config/config-validation.test.ts > No providers supplied > fails when providers array empty
+ ✓ src/config/config-validation.test.ts > No providers supplied > fails when providers key missing
+ ✓ src/config/config-validation.test.ts > Malformed OIDC issuer > fails when issuer is not a valid URL
+ ✓ src/config/config-validation.test.ts > Unknown SameSite value > fails for unsupported sameSite
+ ✓ src/config/config-validation.test.ts > Missing database URL > fails when db is empty
+ ✓ src/config/config-validation.test.ts > Startup throw behaviour > throws for short CSRFSecret
+ ✓ src/config/config-validation.test.ts > Startup throw behaviour > throws for empty providers
+ ✓ src/config/config-validation.test.ts > Startup throw behaviour > throws with descriptive message
+ ✓ src/config/config-validation.test.ts > Startup throw behaviour > does NOT throw for valid config
+
+ Test Files  2 passed (2)
+      Tests  26 passed (26)
+   Start at  13:09:40
+   Duration  185ms (transform 32ms, setup 0ms, collect 41ms, tests 8ms, environment 0ms, prepare 104ms)
+

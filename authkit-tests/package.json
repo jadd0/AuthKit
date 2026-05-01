@@ -1,0 +1,20 @@
+{
+  "name": "authkit-tests",
+  "version": "1.0.0",
+  "description": "AuthKit unit, negative and configuration test suite",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run --reporter=verbose",
+    "test:unit": "vitest run src/unit --reporter=verbose",
+    "test:negative": "vitest run src/negative --reporter=verbose",
+    "test:config": "vitest run src/config --reporter=verbose",
+    "test:watch": "vitest --reporter=verbose",
+    "test:summary": "src/scripts/test-summary.sh"
+  },
+  "devDependencies": {
+    "vitest": "^1.6.0",
+    "zod": "^3.23.8",
+    "@types/node": "^20.12.0",
+    "typescript": "^5.4.0"
+  }
+}
